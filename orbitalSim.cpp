@@ -18,6 +18,7 @@
 
 #define GRAVITATIONAL_CONSTANT 6.6743E-11F
 #define ASTEROIDS_MEAN_RADIUS 4E11F
+#define ASTEROIDS_BODYNUM 100
 
 /**
  * @brief Gets a uniform random value in a range
@@ -55,11 +56,11 @@ void configureAsteroid(OrbitalBody *body, float centerMass)
     float vy = getRandomFloat(-1E2F, 1E2F);
 
     // Fill in with your own fields:
-    // body->mass = 1E12F;  // Typical asteroid weight: 1 billion tons
-    // body->radius = 2E3F; // Typical asteroid radius: 2km
-    // body->color = GRAY;
-    // body->position = {r * cosf(phi), 0, r * sinf(phi)};
-    // body->velocity = {-v * sinf(phi), vy, v * cosf(phi)};
+    body->mass = 1E12F;  // Typical asteroid weight: 1 billion tons
+    body->radius = 2E3F; // Typical asteroid radius: 2km
+    body->color = GRAY;
+    body->position = {r * cosf(phi), 0, r * sinf(phi)};
+    body->velocity = {-v * sinf(phi), vy, v * cosf(phi)};
 }
 
 /**
@@ -76,8 +77,8 @@ OrbitalSim *constructOrbitalSim(float timeStep)
     {
         simulation->timeStep = timeStep;
         simulation->totalTime = 0;
-        simulation->bodyCount = SOLARSYSTEM_BODYNUM;
-        simulation->bodiesList = (OrbitalBody *) calloc(SOLARSYSTEM_BODYNUM, sizeof(OrbitalBody));
+        simulation->bodyCount = SOLARSYSTEM_BODYNUM + ASTEROIDS_BODYNUM;
+        simulation->bodiesList = (OrbitalBody *) calloc(SOLARSYSTEM_BODYNUM + ASTEROIDS_BODYNUM, sizeof(OrbitalBody));
 
         if(simulation->bodiesList)
         {
@@ -88,6 +89,11 @@ OrbitalSim *constructOrbitalSim(float timeStep)
                 simulation->bodiesList[i].mass = solarSystem[i].mass;
                 simulation->bodiesList[i].radius = solarSystem[i].radius;
                 simulation->bodiesList[i].color = solarSystem[i].color;
+            }
+
+            for(int i = SOLARSYSTEM_BODYNUM; i < SOLARSYSTEM_BODYNUM + ASTEROIDS_BODYNUM; i++)
+            {
+                configureAsteroid(&simulation->bodiesList[i], simulation->bodiesList[0].mass);
             }
 
             return simulation;

@@ -6,6 +6,8 @@
  */
 
 #include <time.h>
+#include <string>
+#include <iostream>
 
 #include "view.h"
 
@@ -105,5 +107,6 @@ void renderView(View *view, OrbitalSim *sim)
 
     DrawFPS(0, 0);
     DrawText(getISODate(sim->totalTime), 0, 25, 20, RED);
+
     EndDrawing();
 }

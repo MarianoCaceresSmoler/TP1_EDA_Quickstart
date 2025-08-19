@@ -2,7 +2,9 @@
 
 ## Integrantes del grupo y contribución al trabajo de cada integrante
 
-* [Nombre]: [contribución]
+* [Mariano Cáceres Smoler]: [contribución]
+* [Francisco Chiusaroli]: [contribución]
+* [Enzo Nicolás Rosa Fernández]: [contribución]
 
 [completar]
 
@@ -25,3 +27,5 @@
 ## Bonus points
 
 [completar]
+
+## COMENTAR TODO AL FINAL
