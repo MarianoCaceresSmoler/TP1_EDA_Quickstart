@@ -113,13 +113,14 @@ void destroyOrbitalSim(OrbitalSim *sim)
  */
 void updateOrbitalSim(OrbitalSim *sim)
 {
-    Vector3 gravForce, acceleration = {0};
+    Vector3 gravAcc, acceleration;
     double norm;
 
     sim->totalTime += sim->timeStep;
 
     for(int i = 0; i < sim->bodyCount; i++)
     {
+        acceleration = {0, 0, 0};
         for(int j = 0; j < sim->bodyCount; j++)
         {
             if(i != j)
@@ -127,8 +128,8 @@ void updateOrbitalSim(OrbitalSim *sim)
                 norm = NORM(sim->bodiesList[i].position.x - sim->bodiesList[j].position.x, sim->bodiesList[i].position.y - sim->bodiesList[j].position.y, sim->bodiesList[i].position.z - sim->bodiesList[j].position.z);
                 if (norm != 0)
                 {
-                    gravForce = (sim->bodiesList[i].position - sim->bodiesList[j].position) * -(GRAVITATIONAL_CONSTANT * sim->bodiesList[j].mass) / (norm * norm * norm);
-                    acceleration += gravForce;   
+                    gravAcc = ((sim->bodiesList[i].position - sim->bodiesList[j].position) * (-GRAVITATIONAL_CONSTANT * sim->bodiesList[j].mass)) / (norm * norm * norm);
+                    acceleration += gravAcc;   
                 }            
             }
         }

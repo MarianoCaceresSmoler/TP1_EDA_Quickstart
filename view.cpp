@@ -103,9 +103,7 @@ void renderView(View *view, OrbitalSim *sim)
     DrawGrid(10, 10.0f);
     EndMode3D();
 
-    // Fill in your 2D drawing code here:
-
-
-
+    DrawFPS(0, 0);
+    DrawText(getISODate(sim->totalTime), 0, 25, 20, RED);
     EndDrawing();
 }
