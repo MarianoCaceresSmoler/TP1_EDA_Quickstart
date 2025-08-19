@@ -8,6 +8,8 @@
 // Enables M_PI #define in Windows
 #define _USE_MATH_DEFINES
 
+#define NORM(x, y, z) (sqrt(((x) * (x)) + ((y) * (y)) + ((z) * (z))))
+
 #include <stdlib.h>
 #include <math.h>
 
@@ -68,11 +70,31 @@ void configureAsteroid(OrbitalBody *body, float centerMass)
  */
 OrbitalSim *constructOrbitalSim(float timeStep)
 {
-    // Your code goes here...
+    OrbitalSim * simulation = (OrbitalSim *) malloc(sizeof(OrbitalSim));
 
+    if(simulation)
+    {
+        simulation->timeStep = timeStep;
+        simulation->totalTime = 0;
+        simulation->bodyCount = SOLARSYSTEM_BODYNUM;
+        simulation->bodiesList = (OrbitalBody *) calloc(SOLARSYSTEM_BODYNUM, sizeof(OrbitalBody));
 
+        if(simulation->bodiesList)
+        {
+            for(int i = 0; i < SOLARSYSTEM_BODYNUM; i++)
+            {
+                simulation->bodiesList[i].position = solarSystem[i].position;
+                simulation->bodiesList[i].velocity = solarSystem[i].velocity;
+                simulation->bodiesList[i].mass = solarSystem[i].mass;
+                simulation->bodiesList[i].radius = solarSystem[i].radius;
+                simulation->bodiesList[i].color = solarSystem[i].color;
+            }
 
-    return NULL; // This should return your orbital sim
+            return simulation;
+        }
+    }
+
+    return NULL;
 }
 
 /**
@@ -80,9 +102,8 @@ OrbitalSim *constructOrbitalSim(float timeStep)
  */
 void destroyOrbitalSim(OrbitalSim *sim)
 {
-    // Your code goes here...
-
-
+    free(sim->bodiesList);
+    free(sim);
 }
 
 /**
@@ -92,7 +113,31 @@ void destroyOrbitalSim(OrbitalSim *sim)
  */
 void updateOrbitalSim(OrbitalSim *sim)
 {
-    // Your code goes here...
+    Vector3 gravForce, acceleration = {0};
+    double norm;
 
+    sim->totalTime += sim->timeStep;
 
+    for(int i = 0; i < sim->bodyCount; i++)
+    {
+        for(int j = 0; j < sim->bodyCount; j++)
+        {
+            if(i != j)
+            {
+                norm = NORM(sim->bodiesList[i].position.x - sim->bodiesList[j].position.x, sim->bodiesList[i].position.y - sim->bodiesList[j].position.y, sim->bodiesList[i].position.z - sim->bodiesList[j].position.z);
+                if (norm != 0)
+                {
+                    gravForce = (sim->bodiesList[i].position - sim->bodiesList[j].position) * -(GRAVITATIONAL_CONSTANT * sim->bodiesList[j].mass) / (norm * norm * norm);
+                    acceleration += gravForce;   
+                }            
+            }
+        }
+
+        sim->bodiesList[i].velocity += acceleration * sim->timeStep;
+    }
+
+    for(int i = 0; i < sim->bodyCount; i++)
+    {
+        sim->bodiesList[i].position += sim->bodiesList[i].velocity * sim->timeStep;
+    }
 }
