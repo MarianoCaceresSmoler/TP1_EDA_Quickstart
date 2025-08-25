@@ -18,7 +18,7 @@
 
 #define GRAVITATIONAL_CONSTANT 6.6743E-11F
 #define ASTEROIDS_MEAN_RADIUS 4E11F
-#define ASTEROIDS_BODYNUM 100
+#define ASTEROIDS_BODYNUM 1000
 
 /**
  * @brief Gets a uniform random value in a range
@@ -124,27 +124,21 @@ void updateOrbitalSim(OrbitalSim *sim)
 
     sim->totalTime += sim->timeStep;
 
-    for(int i = 0; i < sim->bodyCount; i++)
+    for(int i = 1; i < sim->bodyCount; i++)
     {
-        acceleration = {0, 0, 0};
-        for(int j = 0; j < sim->bodyCount; j++)
+        acceleration = {0, 0, 0};  
+        sim->bodiesList[i].position += sim->bodiesList[i].velocity * sim->timeStep;
+     
+        int j = 0;
+        norm = NORM(sim->bodiesList[i].position.x - sim->bodiesList[j].position.x, sim->bodiesList[i].position.y - sim->bodiesList[j].position.y, sim->bodiesList[i].position.z - sim->bodiesList[j].position.z);
+        if (norm != 0)
         {
-            if(i != j)
-            {
-                norm = NORM(sim->bodiesList[i].position.x - sim->bodiesList[j].position.x, sim->bodiesList[i].position.y - sim->bodiesList[j].position.y, sim->bodiesList[i].position.z - sim->bodiesList[j].position.z);
-                if (norm != 0)
-                {
-                    gravAcc = ((sim->bodiesList[i].position - sim->bodiesList[j].position) * (-GRAVITATIONAL_CONSTANT * sim->bodiesList[j].mass)) / (norm * norm * norm);
-                    acceleration += gravAcc;   
-                }            
-            }
-        }
+            gravAcc = ((sim->bodiesList[i].position - sim->bodiesList[j].position) * (-GRAVITATIONAL_CONSTANT * sim->bodiesList[j].mass)) / (norm * norm * norm);
+            acceleration += gravAcc;   
+        }  
 
         sim->bodiesList[i].velocity += acceleration * sim->timeStep;
     }
-
-    for(int i = 0; i < sim->bodyCount; i++)
-    {
-        sim->bodiesList[i].position += sim->bodiesList[i].velocity * sim->timeStep;
-    }
+    
+    
 }
