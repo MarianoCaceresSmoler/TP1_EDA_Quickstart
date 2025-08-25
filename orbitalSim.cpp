@@ -12,6 +12,7 @@
 
 #include <stdlib.h>
 #include <math.h>
+#include <stdio.h>
 
 #include "orbitalSim.h"
 #include "ephemerides.h"
@@ -191,6 +192,8 @@ void updateOrbitalSim(OrbitalSim *sim)
                 acceleration += gravAcc;
             }
         }
+
+        
 
         sim->bodiesList[i].velocity += acceleration * sim->timeStep;
     }
