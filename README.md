@@ -2,9 +2,9 @@
 
 ## Integrantes del grupo y contribución al trabajo de cada integrante
 
-* [Mariano Cáceres Smoler]: [contribución]
-* [Francisco Chiusaroli]: [contribución]
-* [Enzo Nicolás Rosa Fernández]: [contribución]
+* Mariano Cáceres Smoler
+* Francisco Chiusaroli
+* Enzo Nicolás Rosa Fernández
 
 [completar]
 
@@ -18,16 +18,32 @@ for (int i = 0; i < 5,10,n; i++) // n  updates por frame
 
 Asi vimos que para valores de timeStep muy grandes, se pierden muchos cálculos intermedios, con lo que las órbitas se desconfiguran 
 y los planetas salen volando.
-Con 10 o 100 días/ por segundo, los planetas mantienen órbitas estables.
-Con 1000 días por segundo, ya apreciamos que algunos planetas salen volando, ya que el metodo y la aproximacion
+Con 10 días por segundo, los planetas mantienen órbitas bastante estables.
+Con 100 o 1000 días por segundo y bastantes actualizaciones, ya apreciamos que algunos planetas salen volando, ya que el metodo y la aproximacion
 utilizada es sensible a pasos grandes.
 
 Para simular más años más rápido, vimos así que era preferible usar múltiples updates por frame en vez de aumentar timeStep, porque así reducimos 
-el error acumulado. Con 5 o 10 updates por frame la simulacion va rapido y no pierde precisión.
+el error acumulado. Con 10 updates por frame la simulacion va rapido y no pierde precisión. Sin embargo, de esta forma se pierden FPS.
 
 ## Verificación del tipo de datos float
 
-[completar]
+Para guardar posiciones, velocidades y aceleraciones usamos Vector3 de raylib, que internamente usa floats para cada componente. Y luego, para las masas, radios y tiempos tambien usamos floats.
+
+Float tiene una precision de aproximadamente 6 a 9 dígitos decimales (aproximadamente 7 digitos), y requiere 32 bits (4 bytes) de memoria. De esta forma, toma valores en un rango de ±3,4e38.
+
+- Los datos de las masas son menores o iguales a aproximadamente 2e30 (masa del sol)
+- Los radios de los cuerpos son menores o iguales a aproximadamente 7e8 (radio del sol).
+- Las posiciones están en un rango de ±9e11 metros. 
+
+Podemos observar como estos 3 datos mencionados entran bien dentro de un float.
+
+Por otro lado, en cuanto al calculo de la aceleracion gravitatoria:
+
+- gravAcc = ((sim->bodiesList[i].position - sim->bodiesList[j].position) * (-GRAVITATIONAL_CONSTANT * sim->bodiesList[j].mass)) / (norm * norm * norm);
+
+Sabiendo que GRAVITATIONAL_CONSTANT 6.6743E-11F, y teniendo en cuenta los rangos de los datos que obtuvimos anteriormente, podemos observar que cada termino del cociente entra dentro del rango de float.
+
+Asi, concluimos que para visualización simplificada float es suficiente. Sin embargo, para alta precisión, estaría bien usar double.
 
 ## Complejidad computacional con asteroides
 
@@ -41,10 +57,14 @@ y con 1000 ya superamos el millón.
 
 ## Mejora de la complejidad computacional
 
-En primer lugar, notamos que el cuello de botella en los graficos viene dado por la funcion de DrawSphere. Sacando esta y cambiando el algoritmo de actualizacion
-fisica con los puntos detallados a continuacion, ya alcanzamos los 60FPS. 
-En primer lugar, para los asteroides calculamos solo la atracción con el sol, y no con los asteroides entre sí ni con los planetas.
-Luego, para
+En primer lugar, notamos que el cuello de botella en los graficos viene dado por la funcion de DrawSphere. Cambiamos esta por la funcion DrawSphereEx, que usamos para reducir la resolucion de la esfera dibujada. Ademas, definimos un rango en el eje z (la altura de la camara), para que los cuerpos se dibujaran como puntos
+y no como esferas definidas cuando la camara supere cierto limite.
+
+Por otro lado, para recudir la complejidad computacional, hicimos dos simplificaciones:
+- Para los planetas y el sol: calculamos la atraccion gravitatoria unicamente entre ellos mismos.
+- Para los asteroides: calculamos la atraccion gravitatoria unicamente con el sol
+
+De esta forma, pasamos de un O(n²) a aproximadamente O(n) (1 for de n repeticiones + 2 fors que suman 9*9 = 81 iteraciones), perdiendo un poco de precision para los asteroides sobre todo, pero que no es tan tan relevante por la diferencia de masa de los cuerpos.
 
 
 ## Bonus points

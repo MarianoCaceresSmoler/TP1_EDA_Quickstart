@@ -13,6 +13,7 @@
 
 #define WINDOW_WIDTH 1280
 #define WINDOW_HEIGHT 720
+#define CAMERA_RANGE 7
 
 /**
  * @brief Converts a timestamp (number of seconds since 1/1/2022)
@@ -89,6 +90,7 @@ bool isViewRendering(View *view)
  */
 void renderView(View *view, OrbitalSim *sim)
 {
+    double norm;
     UpdateCamera(&view->camera, CAMERA_FREE);
 
     BeginDrawing();
@@ -98,8 +100,15 @@ void renderView(View *view, OrbitalSim *sim)
 
     for (int i = 0; i < sim->bodyCount; i++)
     {
-        // DrawSphere(sim->bodiesList[i].position * (1E-11), 0.005F * logf(sim->bodiesList[i].radius), sim->bodiesList[i].color);
-        DrawPoint3D(sim->bodiesList[i].position * (1E-11), sim->bodiesList[i].color);
+        if((view->camera.position.z < CAMERA_RANGE) && (view->camera.position.z  > -CAMERA_RANGE))
+        {
+            DrawSphereEx(sim->bodiesList[i].position * (1E-11), 0.005F * logf(sim->bodiesList[i].radius), 4, 5, sim->bodiesList[i].color);
+        }
+        else
+        {
+            DrawPoint3D(sim->bodiesList[i].position * 1E-11, sim->bodiesList[i].color);
+        }
+
     }
 
     DrawGrid(10, 10.0f);
@@ -107,6 +116,6 @@ void renderView(View *view, OrbitalSim *sim)
 
     DrawFPS(0, 0);
     DrawText(getISODate(sim->totalTime), 0, 25, 20, RED);
-
+    
     EndDrawing();
 }

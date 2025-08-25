@@ -12,19 +12,18 @@
 
 int main()
 {
-    int fps = 60;                                 // Frames per second
-    float timeMultiplier = 10 * SECONDS_PER_DAY; // Simulation speed: 100 days per simulation second
+    int fps = 60; // Frames per second
+    float timeMultiplier = 10 * SECONDS_PER_DAY; // Simulation speed: 10 days per simulation second
     float timeStep = timeMultiplier / fps;
 
     OrbitalSim *sim = constructOrbitalSim(timeStep);
     View *view = constructView(fps);
 
-    int substeps = 10;
+    int subSteps = 10;
 
     while (isViewRendering(view))
     {
-        // updateOrbitalSim(sim);s
-        for (int i = 0; i < substeps; i++) // multiple updates per frame
+        for (int i = 0; i < subSteps; i++) // multiple updates per frame
             updateOrbitalSim(sim);
 
         renderView(view, sim);

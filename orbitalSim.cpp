@@ -17,8 +17,12 @@
 #include "ephemerides.h"
 
 #define GRAVITATIONAL_CONSTANT 6.6743E-11F
+// #define ELASTIC_CONSTANT_PLANETS 1e12
+// #define ELASTIC_CONSTANT_ASTEROIDS 1e-2
+// #define DAMPING_CONSTANT 1e-5
 #define ASTEROIDS_MEAN_RADIUS 4E11F
 #define ASTEROIDS_BODYNUM 1000
+#define RADIUS 1
 
 /**
  * @brief Gets a uniform random value in a range
@@ -71,18 +75,18 @@ void configureAsteroid(OrbitalBody *body, float centerMass)
  */
 OrbitalSim *constructOrbitalSim(float timeStep)
 {
-    OrbitalSim * simulation = (OrbitalSim *) malloc(sizeof(OrbitalSim));
+    OrbitalSim *simulation = new OrbitalSim();
 
-    if(simulation)
+    if (simulation)
     {
         simulation->timeStep = timeStep;
         simulation->totalTime = 0;
         simulation->bodyCount = SOLARSYSTEM_BODYNUM + ASTEROIDS_BODYNUM;
-        simulation->bodiesList = (OrbitalBody *) calloc(SOLARSYSTEM_BODYNUM + ASTEROIDS_BODYNUM, sizeof(OrbitalBody));
+        simulation->bodiesList = new OrbitalBody[simulation->bodyCount];
 
-        if(simulation->bodiesList)
+        if (simulation->bodiesList)
         {
-            for(int i = 0; i < SOLARSYSTEM_BODYNUM; i++)
+            for (int i = 0; i < SOLARSYSTEM_BODYNUM; i++)
             {
                 simulation->bodiesList[i].position = solarSystem[i].position;
                 simulation->bodiesList[i].velocity = solarSystem[i].velocity;
@@ -91,7 +95,7 @@ OrbitalSim *constructOrbitalSim(float timeStep)
                 simulation->bodiesList[i].color = solarSystem[i].color;
             }
 
-            for(int i = SOLARSYSTEM_BODYNUM; i < SOLARSYSTEM_BODYNUM + ASTEROIDS_BODYNUM; i++)
+            for (int i = SOLARSYSTEM_BODYNUM; i < SOLARSYSTEM_BODYNUM + ASTEROIDS_BODYNUM; i++)
             {
                 configureAsteroid(&simulation->bodiesList[i], simulation->bodiesList[0].mass);
             }
@@ -108,8 +112,8 @@ OrbitalSim *constructOrbitalSim(float timeStep)
  */
 void destroyOrbitalSim(OrbitalSim *sim)
 {
-    free(sim->bodiesList);
-    free(sim);
+    delete[] sim->bodiesList;
+    delete sim;
 }
 
 /**
@@ -119,26 +123,75 @@ void destroyOrbitalSim(OrbitalSim *sim)
  */
 void updateOrbitalSim(OrbitalSim *sim)
 {
-    Vector3 gravAcc, acceleration;
-    double norm;
+    Vector3 gravAcc;
+    Vector3 acceleration;
+    float norm;
+    int j;
 
     sim->totalTime += sim->timeStep;
 
-    for(int i = 1; i < sim->bodyCount; i++)
+    // for (int i = 0; i < sim->bodyCount; i++)
+    // {
+    //     j=0;
+    //     acceleration = 0;
+    //     Vector3 dist = sim->bodiesList[i].position - sim->bodiesList[j].position;
+    //     Vector3 distRelative = sim->bodiesList[i].initialPosition - sim->bodiesList[j].position;
+
+    //     Vector3 versor = dist / NORM (dist.x,dist.y,dist.z);
+    //     double distMag = sqrt(dist.x*dist.x + dist.y*dist.y + dist.z*dist.z);
+
+    //     if (distMag == 0) continue;
+
+    //     int j  = 0;
+    //     if(i < SOLARSYSTEM_BODYNUM)
+    //     {
+    //         acceleration = -((NORM(dist.x,dist.y,dist.z)-NORM(distRelative.x,distRelative.y,distRelative.z)) * ELASTIC_CONSTANT_PLANETS) / sim->bodiesList[i].mass;
+    //     }
+    //     else
+    //     {
+    //         acceleration = -((NORM(dist.x,dist.y,dist.z)-NORM(distRelative.x,distRelative.y,distRelative.z))  * ELASTIC_CONSTANT_ASTEROIDS) / sim->bodiesList[i].mass;
+    //     }
+
+    //     sim->bodiesList[i].velocity += versor * acceleration * sim->timeStep;
+
+    // }
+
+    // for (int i = 0; i < sim->bodyCount; i++)
+    // {
+    //     sim->bodiesList[i].position += sim->bodiesList[i].velocity * sim->timeStep;
+    // }
+
+    for (int i = 0; i < sim->bodyCount; i++)
     {
-        acceleration = {0, 0, 0};  
+        acceleration = {0, 0, 0};
         sim->bodiesList[i].position += sim->bodiesList[i].velocity * sim->timeStep;
-     
-        int j = 0;
-        norm = NORM(sim->bodiesList[i].position.x - sim->bodiesList[j].position.x, sim->bodiesList[i].position.y - sim->bodiesList[j].position.y, sim->bodiesList[i].position.z - sim->bodiesList[j].position.z);
-        if (norm != 0)
+
+        if (i < SOLARSYSTEM_BODYNUM)
         {
-            gravAcc = ((sim->bodiesList[i].position - sim->bodiesList[j].position) * (-GRAVITATIONAL_CONSTANT * sim->bodiesList[j].mass)) / (norm * norm * norm);
-            acceleration += gravAcc;   
-        }  
+            for (int j = 0; j < SOLARSYSTEM_BODYNUM; j++)
+            {
+                if (i != j)
+                {
+                    norm = NORM(sim->bodiesList[i].position.x - sim->bodiesList[j].position.x, sim->bodiesList[i].position.y - sim->bodiesList[j].position.y, sim->bodiesList[i].position.z - sim->bodiesList[j].position.z);
+                    if (norm != 0)
+                    {
+                        gravAcc = ((sim->bodiesList[i].position - sim->bodiesList[j].position) * (-GRAVITATIONAL_CONSTANT * sim->bodiesList[j].mass)) / (norm * norm * norm);
+                        acceleration += gravAcc;
+                    }
+                }
+            }
+        }
+        else
+        {
+            j = 0;
+            norm = NORM(sim->bodiesList[i].position.x - sim->bodiesList[j].position.x, sim->bodiesList[i].position.y - sim->bodiesList[j].position.y, sim->bodiesList[i].position.z - sim->bodiesList[j].position.z);
+            if (norm != 0)
+            {
+                gravAcc = ((sim->bodiesList[i].position - sim->bodiesList[j].position) * (-GRAVITATIONAL_CONSTANT * sim->bodiesList[j].mass)) / (norm * norm * norm);
+                acceleration += gravAcc;
+            }
+        }
 
         sim->bodiesList[i].velocity += acceleration * sim->timeStep;
     }
-    
-    
 }
