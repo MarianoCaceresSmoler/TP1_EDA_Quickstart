@@ -11,7 +11,6 @@
 #include "raylib.h"
 #include "raymath.h"
 
-
 /**
  * @brief Orbital body definition
  */

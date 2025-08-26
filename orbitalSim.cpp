@@ -46,7 +46,7 @@ float getRandomFloat(float min, float max)
 void configureAsteroid(OrbitalBody *body, float centerMass)
 {
     // Logit distribution
-    float x = getRandomFloat(0, 1);
+    float x = getRandomFloat(0.1, 5);
     float l = logf(x) - logf(1 - x) + 1;
 
     // https://mathworld.wolfram.com/DiskPointPicking.html
@@ -127,7 +127,8 @@ void updateOrbitalSim(OrbitalSim *sim)
     Vector3 gravAcc;
     Vector3 acceleration;
     float norm;
-    int j;
+    int mostMassiveBody;
+    float biggestMass = 0;;
 
     sim->totalTime += sim->timeStep;
 
@@ -167,6 +168,12 @@ void updateOrbitalSim(OrbitalSim *sim)
         acceleration = {0, 0, 0};
         sim->bodiesList[i].position += sim->bodiesList[i].velocity * sim->timeStep;
 
+        if(biggestMass < sim->bodiesList[i].mass)
+        {
+            biggestMass = sim->bodiesList[i].mass;
+            mostMassiveBody = i;
+        }
+
         if (i < SOLARSYSTEM_BODYNUM)
         {
             for (int j = 0; j < SOLARSYSTEM_BODYNUM; j++)
@@ -184,7 +191,7 @@ void updateOrbitalSim(OrbitalSim *sim)
         }
         else
         {
-            j = 0;
+            int j = mostMassiveBody;
             norm = NORM(sim->bodiesList[i].position.x - sim->bodiesList[j].position.x, sim->bodiesList[i].position.y - sim->bodiesList[j].position.y, sim->bodiesList[i].position.z - sim->bodiesList[j].position.z);
             if (norm != 0)
             {
@@ -193,7 +200,7 @@ void updateOrbitalSim(OrbitalSim *sim)
             }
         }
 
-        
+
 
         sim->bodiesList[i].velocity += acceleration * sim->timeStep;
     }

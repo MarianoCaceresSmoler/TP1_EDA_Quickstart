@@ -13,7 +13,8 @@
 
 #define WINDOW_WIDTH 1280
 #define WINDOW_HEIGHT 720
-#define CAMERA_RANGE 7
+#define CAMERA_RANGE 15
+
 
 /**
  * @brief Converts a timestamp (number of seconds since 1/1/2022)
@@ -90,25 +91,35 @@ bool isViewRendering(View *view)
  */
 void renderView(View *view, OrbitalSim *sim)
 {
-    double norm;
+
     UpdateCamera(&view->camera, CAMERA_FREE);
 
     BeginDrawing();
-
     ClearBackground(BLACK);
     BeginMode3D(view->camera);
 
     for (int i = 0; i < sim->bodyCount; i++)
     {
-        if((view->camera.position.z < CAMERA_RANGE) && (view->camera.position.z  > -CAMERA_RANGE))
+        Vector3 scaledBodyPos = sim->bodiesList[i].position * 1E-11f;
+        Vector3 cameraPos = view->camera.position;
+
+        Vector3 diff = {
+            scaledBodyPos.x - cameraPos.x,
+            scaledBodyPos.y - cameraPos.y,
+            scaledBodyPos.z - cameraPos.z
+        };
+
+        double dist = sqrt(diff.x * diff.x + diff.y * diff.y + diff.z * diff.z);
+
+        if (dist < CAMERA_RANGE)
         {
-            DrawSphereEx(sim->bodiesList[i].position * (1E-11), 0.005F * logf(sim->bodiesList[i].radius), 4, 5, sim->bodiesList[i].color);
+            float scaledRadius = 0.005f * logf(sim->bodiesList[i].radius + 1.0f);
+            DrawSphereEx(scaledBodyPos, scaledRadius, 4, 5, sim->bodiesList[i].color);
         }
         else
         {
-            DrawPoint3D(sim->bodiesList[i].position * 1E-11, sim->bodiesList[i].color);
+            DrawPoint3D(scaledBodyPos, sim->bodiesList[i].color);
         }
-
     }
 
     DrawGrid(10, 10.0f);
@@ -116,6 +127,6 @@ void renderView(View *view, OrbitalSim *sim)
 
     DrawFPS(0, 0);
     DrawText(getISODate(sim->totalTime), 0, 25, 20, RED);
-    
+
     EndDrawing();
 }
