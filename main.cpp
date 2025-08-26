@@ -7,12 +7,15 @@
 
 #include "orbitalSim.h"
 #include "view.h"
+#include "configuration.h"
 
 #define SECONDS_PER_DAY 86400
 
 int main()
 {
-    int simType = 0;
+    visual_sim_type_t simVisualType = PLANETS_SIMULATION;
+    logical_sim_type_t simLogicalType = GRAVITATIONAL_SIMULATION;
+
     int fps = 60; // Frames per second
     float timeMultiplier = 10 * SECONDS_PER_DAY; // Simulation speed: 10 days per simulation second
     float timeStep = timeMultiplier / fps;
@@ -25,9 +28,9 @@ int main()
     while (isViewRendering(view))
     {
         for (int i = 0; i < subSteps; i++) // multiple updates per frame
-            updateOrbitalSim(sim);
+            updateOrbitalSim(sim, simLogicalType);
 
-        renderView(view, sim, simType);
+        renderView(view, sim, simVisualType);
     }
 
     destroyView(view);

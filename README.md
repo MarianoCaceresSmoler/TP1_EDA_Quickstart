@@ -2,9 +2,9 @@
 
 ## Integrantes del grupo y contribución al trabajo de cada integrante
 
-* Mariano Cáceres Smoler
-* Francisco Chiusaroli
-* Enzo Nicolás Rosa Fernández
+* Mariano Cáceres Smoler: [contribucion]
+* Francisco Chiusaroli: [contribucion]
+* Enzo Nicolás Rosa Fernández: [contribucion]
 
 [completar]
 
@@ -57,8 +57,7 @@ y con 1000 ya superamos el millón.
 
 ## Mejora de la complejidad computacional
 
-En primer lugar, notamos que el cuello de botella en los graficos viene dado por la funcion de DrawSphere. Cambiamos esta por la funcion DrawSphereEx, que usamos para reducir la resolucion de la esfera dibujada. Ademas, definimos un rango en el eje z (la altura de la camara), para que los cuerpos se dibujaran como puntos
-y no como esferas definidas cuando la camara supere cierto limite.
+En primer lugar, notamos que el cuello de botella en los graficos viene dado por la funcion de DrawSphere. Cambiamos esta por la funcion DrawSphereEx, que usamos para reducir la resolucion de la esfera dibujada. Ademas, definimos un rango para la distancia de la camara, para que los cuerpos se dibujaran como puntos y no como esferas definidas cuando la camara supere cierto limite.
 
 Por otro lado, para recudir la complejidad computacional, hicimos dos simplificaciones:
 - Para los planetas y el sol: calculamos la atraccion gravitatoria unicamente entre ellos mismos.

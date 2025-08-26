@@ -38,6 +38,6 @@ struct OrbitalSim
 OrbitalSim *constructOrbitalSim(float timeStep);
 void destroyOrbitalSim(OrbitalSim *sim);
 
-void updateOrbitalSim(OrbitalSim *sim);
+void updateOrbitalSim(OrbitalSim *sim, int simType);
 
 #endif
