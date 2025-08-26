@@ -10,19 +10,19 @@
 
 #define NORM(x, y, z) (sqrt(((x) * (x)) + ((y) * (y)) + ((z) * (z))))
 
-#include <stdlib.h>
 #include <math.h>
 #include <stdio.h>
+#include <stdlib.h>
 
-#include "orbitalSim.h"
 #include "ephemerides.h"
+#include "orbitalSim.h"
 
 #define GRAVITATIONAL_CONSTANT 6.6743E-11F
-// #define ELASTIC_CONSTANT_PLANETS 1e12
-// #define ELASTIC_CONSTANT_ASTEROIDS 1e-2
+#define ELASTIC_CONSTANT_PLANETS 5e13
+#define ELASTIC_CONSTANT_ASTEROIDS 5e-2
 // #define DAMPING_CONSTANT 1e-5
 #define ASTEROIDS_MEAN_RADIUS 4E11F
-#define ASTEROIDS_BODYNUM 1000
+#define ASTEROIDS_BODYNUM 500
 #define RADIUS 1
 
 /**
@@ -46,11 +46,11 @@ float getRandomFloat(float min, float max)
 void configureAsteroid(OrbitalBody *body, float centerMass)
 {
     // Logit distribution
-    float x = getRandomFloat(0.1, 5);
+    float x = getRandomFloat(0.1, 1);
     float l = logf(x) - logf(1 - x) + 1;
 
     // https://mathworld.wolfram.com/DiskPointPicking.html
-    float r = ASTEROIDS_MEAN_RADIUS * sqrtf(fabsf(l));
+    float r = 4 * ASTEROIDS_MEAN_RADIUS * sqrtf(fabsf(l));
     float phi = getRandomFloat(0, 2.0F * (float)M_PI);
 
     // Surprise!
@@ -65,6 +65,7 @@ void configureAsteroid(OrbitalBody *body, float centerMass)
     body->radius = 2E3F; // Typical asteroid radius: 2km
     body->color = GRAY;
     body->position = {r * cosf(phi), 0, r * sinf(phi)};
+    body->initialPosition = body->position;
     body->velocity = {-v * sinf(phi), vy, v * cosf(phi)};
 }
 
@@ -90,6 +91,7 @@ OrbitalSim *constructOrbitalSim(float timeStep)
             for (int i = 0; i < SOLARSYSTEM_BODYNUM; i++)
             {
                 simulation->bodiesList[i].position = solarSystem[i].position;
+                simulation->bodiesList[i].initialPosition = solarSystem[i].position;
                 simulation->bodiesList[i].velocity = solarSystem[i].velocity;
                 simulation->bodiesList[i].mass = solarSystem[i].mass;
                 simulation->bodiesList[i].radius = solarSystem[i].radius;
@@ -127,48 +129,44 @@ void updateOrbitalSim(OrbitalSim *sim)
     Vector3 gravAcc;
     Vector3 acceleration;
     float norm;
-    int mostMassiveBody;
-    float biggestMass = 0;;
+    float mostMassiveBody, biggestMass = 0;
+    int j;
 
     sim->totalTime += sim->timeStep;
 
-    // for (int i = 0; i < sim->bodyCount; i++)
-    // {
-    //     j=0;
+    //   float acceleration;
+
+    //   for ( int i = 0; i < sim->bodyCount; i++ ) {
+    //     j = 0;
     //     acceleration = 0;
     //     Vector3 dist = sim->bodiesList[i].position - sim->bodiesList[j].position;
     //     Vector3 distRelative = sim->bodiesList[i].initialPosition - sim->bodiesList[j].position;
 
-    //     Vector3 versor = dist / NORM (dist.x,dist.y,dist.z);
-    //     double distMag = sqrt(dist.x*dist.x + dist.y*dist.y + dist.z*dist.z);
+    //     Vector3 versor = dist / NORM(dist.x, dist.y, dist.z);
+    //     double distMag = sqrt(dist.x * dist.x + dist.y * dist.y + dist.z * dist.z);
 
-    //     if (distMag == 0) continue;
+    //     if ( distMag == 0 ) continue;
 
-    //     int j  = 0;
-    //     if(i < SOLARSYSTEM_BODYNUM)
-    //     {
-    //         acceleration = -((NORM(dist.x,dist.y,dist.z)-NORM(distRelative.x,distRelative.y,distRelative.z)) * ELASTIC_CONSTANT_PLANETS) / sim->bodiesList[i].mass;
-    //     }
-    //     else
-    //     {
-    //         acceleration = -((NORM(dist.x,dist.y,dist.z)-NORM(distRelative.x,distRelative.y,distRelative.z))  * ELASTIC_CONSTANT_ASTEROIDS) / sim->bodiesList[i].mass;
+    //     int j = 0;
+    //     if ( i < SOLARSYSTEM_BODYNUM ) {
+    //       acceleration = -((NORM(dist.x, dist.y, dist.z) - NORM(distRelative.x, distRelative.y, distRelative.z)) * ELASTIC_CONSTANT_PLANETS) / sim->bodiesList[i].mass;
+    //     } else {
+    //       acceleration = -((NORM(dist.x, dist.y, dist.z) - NORM(distRelative.x, distRelative.y, distRelative.z)) * ELASTIC_CONSTANT_ASTEROIDS) / sim->bodiesList[i].mass;
     //     }
 
     //     sim->bodiesList[i].velocity += versor * acceleration * sim->timeStep;
+    //   }
 
-    // }
-
-    // for (int i = 0; i < sim->bodyCount; i++)
-    // {
+    //   for ( int i = 0; i < sim->bodyCount; i++ ) {
     //     sim->bodiesList[i].position += sim->bodiesList[i].velocity * sim->timeStep;
-    // }
+    //   }
 
     for (int i = 0; i < sim->bodyCount; i++)
     {
         acceleration = {0, 0, 0};
         sim->bodiesList[i].position += sim->bodiesList[i].velocity * sim->timeStep;
 
-        if(biggestMass < sim->bodiesList[i].mass)
+        if (biggestMass < sim->bodiesList[i].mass)
         {
             biggestMass = sim->bodiesList[i].mass;
             mostMassiveBody = i;
@@ -199,8 +197,6 @@ void updateOrbitalSim(OrbitalSim *sim)
                 acceleration += gravAcc;
             }
         }
-
-
 
         sim->bodiesList[i].velocity += acceleration * sim->timeStep;
     }

@@ -17,6 +17,7 @@
 struct OrbitalBody
 {
     Vector3 position;
+    Vector3 initialPosition; // [m]
     Vector3 velocity;
     float mass;
     float radius;
