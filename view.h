@@ -21,6 +21,7 @@ struct View
 };
 
 View *constructView(int fps);
+void setup_3D_view(View *view);
 void destroyView(View *view);
 
 bool isViewRendering(View *view);

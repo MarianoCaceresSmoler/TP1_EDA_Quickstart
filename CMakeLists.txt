@@ -16,7 +16,7 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     add_link_options(-fsanitize=undefined)
 endif()
 
-add_executable(orbitalsim main.cpp orbitalSim.cpp view.cpp)
+add_executable(orbitalsim main.cpp orbitalSim.cpp view.cpp menu.cpp)
 
 # Raylib y GLFW
 find_package(raylib CONFIG REQUIRED)

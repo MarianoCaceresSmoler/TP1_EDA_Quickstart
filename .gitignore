@@ -1,1 +1,6 @@
-/build
+/build/CMakeCache.txt
+/build/cmake_install.cmake
+/build/.cmake
+/build/CMakeFiles
+/build/compile_commands.json
+/build/orbitalsim

@@ -5,36 +5,42 @@
  * @copyright Copyright (c) 2022-2023
  */
 
+#include "configuration.h"
 #include "orbitalSim.h"
 #include "view.h"
-#include "configuration.h"
+#include "menu.h"
 
 #define SECONDS_PER_DAY 86400
 
-int main()
-{
-    visual_sim_type_t simVisualType = PLANETS_SIMULATION;
-    logical_sim_type_t simLogicalType = GRAVITATIONAL_SIMULATION;
+int main() {
+  visual_sim_type_t simVisualType = SIM_STANDBY;
+  logical_sim_type_t simLogicalType = LOGIC_STANDBY;
 
-    int fps = 60; // Frames per second
-    float timeMultiplier = 10 * SECONDS_PER_DAY; // Simulation speed: 10 days per simulation second
-    float timeStep = timeMultiplier / fps;
+  int fps = 60;                                // Frames per second
+  float timeMultiplier = 10 * SECONDS_PER_DAY; // Simulation speed: 10 days per simulation second
+  float timeStep = timeMultiplier / fps;
 
-    OrbitalSim *sim = constructOrbitalSim(timeStep);
-    View *view = constructView(fps);
+  OrbitalSim *sim = constructOrbitalSim(timeStep);
+  View *view = constructView(fps);
 
-    int subSteps = 10;
+  InitAudioDevice();
 
-    while (isViewRendering(view))
-    {
-        for (int i = 0; i < subSteps; i++) // multiple updates per frame
-            updateOrbitalSim(sim, simLogicalType);
+  menu (&simVisualType, &simLogicalType, view);
 
-        renderView(view, sim, simVisualType);
-    }
+  setup_3D_view(view);
 
-    destroyView(view);
-    destroyOrbitalSim(sim);
+  int subSteps = 10;
 
-    return 0;
+  while ( isViewRendering(view) ) {
+    for ( int i = 0; i < subSteps; i++ ) // multiple updates per frame
+      updateOrbitalSim(sim, simLogicalType);
+
+    renderView(view, sim, simVisualType);
+  }
+
+  destroyView(view);
+  destroyOrbitalSim(sim);
+  CloseAudioDevice();
+
+  return 0;
 }
