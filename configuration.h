@@ -13,4 +13,11 @@ typedef enum { LOGIC_STANDBY,
                GRAVITATIONAL_SIMULATION,
                SPRINGS_SIMULATION } logical_sim_type_t;
 
+typedef struct {
+	float current;
+	float width;
+	float height;
+	float refresh_rate;
+}monitor_t;
+
 #endif

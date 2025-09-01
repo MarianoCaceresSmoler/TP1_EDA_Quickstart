@@ -5,28 +5,27 @@
  * @author Francisco Chiusaroli
  *
  */
-
 #include "menu.h"
 
 #include <chrono>
 #include <stdio.h>
 
 #define TYPE_COUNTER 3
-#define TOGGLE_LIMIT 5
+#define TOGGLE_LIMIT 6
 
-struct resource {
+typedef struct {
   Font Font_Gothic;
   Font Font_Golden;
   Font Font_Typerwriter;
 
   Sound Typewriter_forward[TYPE_COUNTER];
   Sound Typewriter_backward[TYPE_COUNTER];
-};
+} resource;
 
 static void intialize_resources(resource *Master_resource);
 static void kill_resources(resource *Master_resource);
 static long long timestamp_millis();
-static void animation_intro(resource *Master_resource);
+static void animation_intro(resource *Master_resource, monitor_t *monitor);
 
 /**
  * @name menu
@@ -38,13 +37,13 @@ static void animation_intro(resource *Master_resource);
  * @param view: Graphical interface.
  */
 
-void menu(visual_sim_type_t *simVisualType, logical_sim_type_t *simLogicalType, View *view) {
+void menu(visual_sim_type_t *simVisualType, logical_sim_type_t *simLogicalType, View *view, monitor_t *monitor) {
 
   resource Master_resource;
 
   intialize_resources(&Master_resource);
 
-  animation_intro(&Master_resource);
+  animation_intro(&Master_resource, monitor);
 
   kill_resources(&Master_resource);
 }
@@ -114,17 +113,17 @@ static long long timestamp_millis() {
  * @param Master_resource: Pointer to struct holding the resources' information.
  */
 
-static void animation_intro(resource *Master_resource) {
+static void animation_intro(resource *Master_resource, monitor_t *monitor) {
 
-  long long timer_1;
-  long long timer_2;
-  long long timer_3;
+  long long timer_1, timer_2, timer_3;
+
+  Vector2 text_position;
 
   short int buffer_length = 0;
   short int toggle_counter = 0;
   short int sound_counter = 0;
-  char end_symbol = '|';
 
+  char end_symbol = '|';
   char present_1[] = "Lionel Messi Studios present";
   char buffer[sizeof(present_1) + 1] = {0};
 
@@ -148,6 +147,7 @@ static void animation_intro(resource *Master_resource) {
       timer_1 = timestamp_millis();
       buffer_length++;
       PlaySound(Master_resource->Typewriter_forward[sound_counter]);
+
       if ( sound_counter >= TYPE_COUNTER - 1 )
       {
         sound_counter = 0;
@@ -157,6 +157,7 @@ static void animation_intro(resource *Master_resource) {
         sound_counter++;
       }
     }
+
     else if ( toggle_counter < TOGGLE_LIMIT && buffer_length >= sizeof(present_1) && timer_3 - timer_1 >= 500 )
     {
       if ( end_symbol != 0 )
@@ -171,6 +172,7 @@ static void animation_intro(resource *Master_resource) {
       timer_1 = timestamp_millis();
       toggle_counter++;
     }
+
     else if ( toggle_counter >= TOGGLE_LIMIT && buffer_length > 0 && timer_3 - timer_1 >= 100 )
     {
       buffer_length--;
@@ -193,12 +195,15 @@ static void animation_intro(resource *Master_resource) {
         buffer[0] = 0;
       }
     }
+
     else if ( toggle_counter >= TOGGLE_LIMIT && !buffer_length && timer_3 - timer_1 >= 2000 )
     {
       finish = 1;
     }
 
-    DrawTextEx(Master_resource->Font_Typerwriter, buffer, {GetScreenWidth() * 0.4f + 64, GetScreenHeight() * 0.7f}, 64, 0.0, WHITE);
+    if ( toggle_counter == 0 || toggle_counter >= TOGGLE_LIMIT ) text_position = (Vector2) {monitor->width * 0.5f, monitor->height * 0.5f} - MeasureTextEx(Master_resource->Font_Typerwriter, buffer, 64, 0.0) * 0.5;
+
+    DrawTextEx(Master_resource->Font_Typerwriter, buffer, text_position, 64, 0.0, WHITE);
 
     EndDrawing();
 

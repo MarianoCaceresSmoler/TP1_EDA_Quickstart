@@ -9,11 +9,12 @@
 #include <string>
 #include <time.h>
 
+#include "configuration.h"
 #include "view.h"
 
-#define WINDOW_WIDTH 1280
-#define WINDOW_HEIGHT 720
-#define CAMERA_RANGE 45
+#define SETUP_WINDOW_WIDTH 640
+#define SETUP_WINDOW_HEIGHT 480
+#define CAMERA_RANGE 15
 
 Model Pepsi_can;
 
@@ -37,10 +38,7 @@ const char *getISODate(float timestamp) {
 
   // Returns ISO date
   struct tm *localTM = localtime(&unixTimestamp);
-  return TextFormat("%04d-%02d-%02d",
-                    1900 + localTM->tm_year,
-                    localTM->tm_mon + 1,
-                    localTM->tm_mday);
+  return TextFormat("%04d-%02d-%02d", 1900 + localTM->tm_year, localTM->tm_mon + 1, localTM->tm_mday);
 }
 
 /**
@@ -49,14 +47,22 @@ const char *getISODate(float timestamp) {
  * @param fps Frames per second for the view
  * @return The view
  */
-View *constructView(int fps) {
+View *constructView(int *fps, monitor_t *monitor) {
   View *view = new View();
 
-  InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "EDA Orbital Simulation");
+  InitWindow(0, 0, "EDA Orbital Simulation");
   ToggleFullscreen();
-  SetTargetFPS(fps);
 
-  Pepsi_can = LoadModel("./Models/Pepsi_Basic/Pepsi_Can.obj");
+  monitor->current = GetCurrentMonitor();
+  monitor->height = GetMonitorHeight(monitor->current);
+  monitor->refresh_rate = GetMonitorRefreshRate(monitor->current);
+  monitor->width = GetMonitorWidth(monitor->current);
+
+  *fps = monitor->refresh_rate;
+
+  SetTargetFPS(*fps);
+
+  Pepsi_can = LoadModel("./Models/Pepsi_Basic/Pepsi_Can.obj"); // Ignore
 
   return view;
 }

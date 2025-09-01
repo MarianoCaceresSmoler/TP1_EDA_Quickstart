@@ -10,17 +10,17 @@
 
 #include <raylib.h>
 
+#include "configuration.h"
 #include "orbitalSim.h"
 
 /**
  * The view data
  */
-struct View
-{
-    Camera3D camera;
+struct View {
+  Camera3D camera;
 };
 
-View *constructView(int fps);
+View *constructView(int * fps, monitor_t *monitor);
 void setup_3D_view(View *view);
 void destroyView(View *view);
 
