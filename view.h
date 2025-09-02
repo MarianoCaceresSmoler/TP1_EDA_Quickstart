@@ -27,4 +27,6 @@ void destroyView(View *view);
 bool isViewRendering(View *view);
 void renderView(View *view, OrbitalSim *sim, resource_t * Master_resource, int simType);
 
+const char *getISODate(float timestamp);
+
 #endif

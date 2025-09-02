@@ -12,6 +12,7 @@
 #include <iostream>
 
 #define SECONDS_PER_DAY 86400
+#define MAX_GRADIENT 255
 
 int main()
 {
@@ -23,10 +24,16 @@ int main()
 
 	int fps = monitor.refresh_rate; // Frames per second
 
+	bool temp_skip = 0;
+
+	unsigned char gradient = 255;
+
 	View *view = constructView(&fps, &monitor);
 
 	float timeMultiplier = 10 * SECONDS_PER_DAY; // Simulation speed: 10 days per simulation second
 	float timeStep = timeMultiplier / fps;
+
+	float blur_gradient = MAX_GRADIENT - 20;
 
 	OrbitalSim *sim = constructOrbitalSim(timeStep);
 
@@ -39,16 +46,20 @@ int main()
 
 	setup_3D_view(view);
 
-	int subSteps = 10;
+	int subSteps = 1;
 
 	keyboartInputs_t inputs;
 
 	while (isViewRendering(view))
 	{
-		if (IsKeyDown(KEY_RIGHT)) inputs.keyRight = 1;
-        if (IsKeyDown(KEY_LEFT)) inputs.keyLeft = 1;
-        if (IsKeyDown(KEY_UP)) inputs.keyUp = 1;
-        if (IsKeyDown(KEY_DOWN)) inputs.keyDown = 1;
+		if (IsKeyDown(KEY_RIGHT))
+			inputs.keyRight = 1;
+		if (IsKeyDown(KEY_LEFT))
+			inputs.keyLeft = 1;
+		if (IsKeyDown(KEY_UP))
+			inputs.keyUp = 1;
+		if (IsKeyDown(KEY_DOWN))
+			inputs.keyDown = 1;
 
 		updateSpaceShip(sim->ship, inputs, sim->timeStep);
 
@@ -56,21 +67,33 @@ int main()
 			updateOrbitalSim(sim, simLogicalType);
 
 		renderView(view, sim, Master_resource, simVisualType);
+		update_blur_shader(Master_resource, &monitor, blur_gradient);
 
-		BeginDrawing();
+		if (blur_gradient > 5)
+			blur_gradient -= 2 * blur_gradient / (MAX_GRADIENT - blur_gradient);
 
-		ClearBackground(BLACK);
-		//     BeginShaderMode(Master_resource->Shader_blur);
-		DrawTextureRec(Master_resource->Texture_Buffer.texture, (Rectangle){0, 0, (float)Master_resource->Texture_Buffer.texture.width, (float)-Master_resource->Texture_Buffer.texture.height}, (Vector2){0, 0}, WHITE);
+		//     if (temp_skip) BeginDrawing_with_blurry_filter(Master_resource);
+		//     else
+		BeginDrawing_without_blurry_filter(Master_resource);
 
-		//     EndShaderMode();
+		if (GetKeyPressed())
+			temp_skip = 1;
+
+		//     DrawFPS(0, 0);
+		//     DrawText(getISODate(sim->totalTime), 0, 25, 20, RED);
+
+		if (fading_black_wall(&monitor))
+		{
+			DrawTextEx(Master_resource->Font_Golden, "Space Invaders", (Vector2){monitor.width * 0.5f, monitor.height * 0.3f} - MeasureTextEx(Master_resource->Font_Golden, "Space Invaders", 128, 0.0) * 0.5, 128, 0.0, GOLD);
+		}
+
 		EndDrawing();
 
 		inputs.keyRight = 0;
-        inputs.keyLeft = 0;
-        inputs.keyUp = 0;
-        inputs.keyDown = 0;
-	}
+		inputs.keyLeft = 0;
+		inputs.keyUp = 0;
+		inputs.keyDown = 0;
+	}	
 
 	destroyView(view);
 	destroyOrbitalSim(sim);

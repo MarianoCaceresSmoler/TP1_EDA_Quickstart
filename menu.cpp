@@ -37,7 +37,7 @@ resource_t *intro(visual_sim_type_t *simVisualType, logical_sim_type_t *simLogic
   // kill_resources(Master_resource);
 
   *simVisualType = PLANETS_SIMULATION;
-  *simLogicalType = GRAVITATIONAL_SIMULATION;
+  *simLogicalType = SPRINGS_SIMULATION;
 
   return Master_resource;
 }
@@ -53,14 +53,23 @@ resource_t *intro(visual_sim_type_t *simVisualType, logical_sim_type_t *simLogic
 static void intialize_resources(resource_t *Master_resource, monitor_t *monitor) {
 
   Master_resource->Font_Gothic = LoadFontEx(FONTS_LOCATE("Gothic_regular.ttf"), 32, 0, 250);
-  Master_resource->Font_Golden = LoadFontEx(FONTS_LOCATE("Golden.otf"), 64, 0, 250);
+  Master_resource->Font_Golden = LoadFontEx(FONTS_LOCATE("Golden.otf"), 128, 0, 250);
   Master_resource->Font_Typerwriter = LoadFontEx(FONTS_LOCATE("TypeWriter.ttf"), 64, 0, 250);
 
   Master_resource->Model_PepsiCan = LoadModel(MODELS_LOCATE("Pepsi_Basic/Pepsi_Can.obj")); // Ignore
-  Master_resource->Model_SpaceShip = LoadModel(MODELS_LOCATE("Pepsi_Basic/Pepsi_Can.obj"));
+  Master_resource->Model_SpaceShip = LoadModel(MODELS_LOCATE("UFO/Low_poly_UFO.obj"));
 
-  //   Master_resource->Shader_blur = LoadShader(0, SHADER_LOCATE("Shader_Blur.fs"));
-  //   Master_resource->Shader_blur_intensity_location = GetShaderLocation(Master_resource->Shader_blur, "blurStrength");
+  Master_resource->Shader_blur_h = LoadShader(0, SHADER_LOCATE("Shader_Blur_h.fs"));
+  Master_resource->Shader_blur_h_intensity_location = GetShaderLocation(Master_resource->Shader_blur_h, "blurStrength");
+  Master_resource->Shader_blur_h_renderHeight = GetShaderLocation(Master_resource->Shader_blur_h, "renderHeight");
+  Master_resource->Shader_blur_h_renderWidth = GetShaderLocation(Master_resource->Shader_blur_h, "renderWidth");
+
+  Master_resource->Shader_blur_v = LoadShader(0, SHADER_LOCATE("Shader_Blur_v.fs"));
+  Master_resource->Shader_blur_v_intensity_location = GetShaderLocation(Master_resource->Shader_blur_v, "blurStrength");
+  Master_resource->Shader_blur_v_renderHeight = GetShaderLocation(Master_resource->Shader_blur_v, "renderHeight");
+  Master_resource->Shader_blur_v_renderWidth = GetShaderLocation(Master_resource->Shader_blur_v, "renderWidth");
+
+  update_blur_shader(Master_resource, monitor, 5.0);
 
   for ( int i = 0; i < TYPE_COUNTER; i++ )
   {
@@ -68,7 +77,8 @@ static void intialize_resources(resource_t *Master_resource, monitor_t *monitor)
     Master_resource->Typewriter_backward[i] = LoadSound(AUDIO_LOCATE("Typewriter_backward.wav"));
   }
 
-  Master_resource->Texture_Buffer = LoadRenderTexture(monitor->width, monitor->height);
+  Master_resource->Texture_Buffer1 = LoadRenderTexture(monitor->width, monitor->height);
+  Master_resource->Texture_Buffer2 = LoadRenderTexture(monitor->width, monitor->height);
 }
 
 /**
@@ -88,9 +98,11 @@ void kill_resources(resource_t *Master_resource) {
   UnloadModel(Master_resource->Model_PepsiCan);
   UnloadModel(Master_resource->Model_SpaceShip);
 
-  //   UnloadShader(Master_resource->Shader_blur);
+  UnloadShader(Master_resource->Shader_blur_h);
+  UnloadShader(Master_resource->Shader_blur_v);
 
-  UnloadRenderTexture(Master_resource->Texture_Buffer);
+  UnloadRenderTexture(Master_resource->Texture_Buffer1);
+  UnloadRenderTexture(Master_resource->Texture_Buffer2);
 
   for ( int i = 0; i < TYPE_COUNTER; i++ )
   {
@@ -220,4 +232,55 @@ static void animation_intro(resource_t *Master_resource, monitor_t *monitor) {
 
     if ( GetKeyPressed() != 0 ) finish = 1;
   }
+}
+
+void BeginDrawing_with_blurry_filter(resource_t *Master_resource) {
+  BeginTextureMode(Master_resource->Texture_Buffer2);
+
+  ClearBackground(BLACK);
+
+  BeginShaderMode(Master_resource->Shader_blur_h);
+  DrawTextureRec(Master_resource->Texture_Buffer1.texture, (Rectangle) {0, 0, (float) Master_resource->Texture_Buffer1.texture.width, (float) -Master_resource->Texture_Buffer1.texture.height}, (Vector2) {0, 0}, WHITE);
+  EndShaderMode();
+
+  EndTextureMode();
+
+  BeginDrawing();
+
+  ClearBackground(BLACK);
+
+  BeginShaderMode(Master_resource->Shader_blur_v);
+  DrawTextureRec(Master_resource->Texture_Buffer2.texture, (Rectangle) {0, 0, (float) Master_resource->Texture_Buffer2.texture.width, (float) -Master_resource->Texture_Buffer2.texture.height}, (Vector2) {0, 0}, WHITE);
+  EndShaderMode();
+}
+
+void BeginDrawing_without_blurry_filter(resource_t* Master_resource) {
+  BeginDrawing();
+
+  ClearBackground(BLACK);
+  DrawTextureRec(Master_resource->Texture_Buffer1.texture, (Rectangle) {0, 0, (float) Master_resource->Texture_Buffer1.texture.width, (float) -Master_resource->Texture_Buffer1.texture.height}, (Vector2) {0, 0}, WHITE);
+}
+
+void update_blur_shader(resource_t *Master_resource, monitor_t *monitor, float factor) {
+
+  float blurStrength = factor;
+  SetShaderValue(Master_resource->Shader_blur_h, Master_resource->Shader_blur_h_renderWidth, &monitor->width, SHADER_UNIFORM_FLOAT);
+  SetShaderValue(Master_resource->Shader_blur_h, Master_resource->Shader_blur_h_renderHeight, &monitor->height, SHADER_UNIFORM_FLOAT);
+  SetShaderValue(Master_resource->Shader_blur_h, Master_resource->Shader_blur_h_intensity_location, &blurStrength, SHADER_UNIFORM_FLOAT);
+
+  SetShaderValue(Master_resource->Shader_blur_v, Master_resource->Shader_blur_v_renderWidth, &monitor->width, SHADER_UNIFORM_FLOAT);
+  SetShaderValue(Master_resource->Shader_blur_v, Master_resource->Shader_blur_v_renderHeight, &monitor->height, SHADER_UNIFORM_FLOAT);
+  SetShaderValue(Master_resource->Shader_blur_v, Master_resource->Shader_blur_v_intensity_location, &blurStrength, SHADER_UNIFORM_FLOAT);
+}
+
+bool fading_black_wall(monitor_t *monitor) {
+  static unsigned char gradient = 255;
+
+  DrawRectangle(0, 0, monitor->width, monitor->height, {0, 0, 0, gradient});
+  if ( gradient > 0 ) gradient--;
+
+  if ( gradient > 0 )
+    return 0;
+  else
+    return 1;
 }

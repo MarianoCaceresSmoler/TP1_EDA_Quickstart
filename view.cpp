@@ -17,8 +17,8 @@
 
 #define SETUP_WINDOW_WIDTH 640
 #define SETUP_WINDOW_HEIGHT 480
-#define CAMERA_SHORT_RANGE 2
-#define CAMERA_MEDIUM_RANGE 15
+#define CAMERA_SHORT_RANGE 5
+#define CAMERA_MEDIUM_RANGE 150
 
 static void renderStandardSimulation(View *view, OrbitalSim *sim, resource_t *Master_resource);
 static void renderPepsiSimulation(View *view, OrbitalSim *sim, resource_t *Master_resource);
@@ -126,9 +126,9 @@ static void renderStandardSimulation(View *view, OrbitalSim *sim, resource_t *Ma
 {
 	UpdateCamera(&view->camera, CAMERA_FREE);
 
-	BeginTextureMode(Master_resource->Texture_Buffer);
-	ClearBackground(BLACK);
-	BeginMode3D(view->camera);
+  BeginTextureMode(Master_resource->Texture_Buffer1);
+  ClearBackground(BLACK);
+  BeginMode3D(view->camera);
 
 	static float rotation;
 
@@ -167,10 +167,10 @@ static void renderStandardSimulation(View *view, OrbitalSim *sim, resource_t *Ma
 	DrawGrid(10, 10.0f);
 	renderSpaceShip(view, sim, Master_resource);
 
-	EndMode3D();
+  EndMode3D();
 
-	DrawFPS(0, 0);
-	DrawText(getISODate(sim->totalTime), 0, 25, 20, RED);
+//   DrawFPS(0, 0);
+//   DrawText(getISODate(sim->totalTime), 0, 25, 20, RED);
 
 	EndTextureMode();
 }
@@ -179,7 +179,7 @@ static void renderPepsiSimulation(View *view, OrbitalSim *sim, resource_t *Maste
 {
 	UpdateCamera(&view->camera, CAMERA_FREE);
 
-	BeginTextureMode(Master_resource->Texture_Buffer);
+  BeginTextureMode(Master_resource->Texture_Buffer1);
 
 	ClearBackground(BLACK);
 	BeginMode3D(view->camera);
@@ -229,11 +229,11 @@ static void renderPepsiSimulation(View *view, OrbitalSim *sim, resource_t *Maste
 static void renderSpaceShip(View *view, OrbitalSim *sim, resource_t *Master_resource)
 {
 	DrawModelEx(
-		Master_resource->Model_PepsiCan,
+		Master_resource->Model_SpaceShip,
 		sim->ship->position * (1E-11), 
 		{0, 1, 0},           
 		-100,
-		{0.05, 0.05, 0.05}, 
+		{0.01, 0.01, 0.01}, 
 		WHITE        
 	);
 
