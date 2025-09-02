@@ -33,6 +33,9 @@ int main() {
 
   resource_t *Master_resource = intro(&simVisualType, &simLogicalType, view, &monitor);
 
+//   float blurStrength = 1.0f;
+//   SetShaderValue(Master_resource->Shader_blur, Master_resource->Shader_blur_intensity_location, &blurStrength, SHADER_UNIFORM_FLOAT);
+
   setup_3D_view(view);
 
   int subSteps = 10;
@@ -43,6 +46,15 @@ int main() {
       updateOrbitalSim(sim, simLogicalType);
 
     renderView(view, sim, Master_resource, simVisualType);
+
+    BeginDrawing();
+
+    ClearBackground(BLACK);
+//     BeginShaderMode(Master_resource->Shader_blur);
+     DrawTextureRec(Master_resource->Texture_Buffer.texture, (Rectangle) {0, 0, (float) Master_resource->Texture_Buffer.texture.width, (float) -Master_resource->Texture_Buffer.texture.height}, (Vector2) {0, 0}, WHITE);
+
+//     EndShaderMode();
+    EndDrawing();
   }
 
   destroyView(view);

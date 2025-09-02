@@ -14,6 +14,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "configuration.h"
 #include "ephemerides.h"
 #include "orbitalSim.h"
 
@@ -137,7 +138,7 @@ void destroyOrbitalSim(OrbitalSim *sim)
  */
 void updateOrbitalSim(OrbitalSim *sim, int simType)
 {
-    if (simType == 0)
+    if (simType == GRAVITATIONAL_SIMULATION)
     {
         updateUsingGravity(sim);
     }
@@ -149,7 +150,6 @@ void updateOrbitalSim(OrbitalSim *sim, int simType)
 
 static void updateUsingGravity(OrbitalSim *sim)
 {
-
     Vector3 gravAcc;
     Vector3 acceleration;
     float norm;
@@ -160,7 +160,6 @@ static void updateUsingGravity(OrbitalSim *sim)
 
     for (int i = 0; i < sim->bodyCount; i++)
     {
-
         acceleration = {0, 0, 0};
         sim->bodiesList[i].position += sim->bodiesList[i].velocity * sim->timeStep;
 
@@ -171,7 +170,7 @@ static void updateUsingGravity(OrbitalSim *sim)
                 biggestMass = sim->bodiesList[i].mass;
                 indexOfMostMassiveBody = i;
             }
-            
+
             for (int j = 0; j < SOLARSYSTEM_BODYNUM; j++)
             {
                 if (i != j)
@@ -226,6 +225,7 @@ static void updateUsingSprings(OrbitalSim *sim)
             continue;
 
         int j = 0;
+
         if (i < SOLARSYSTEM_BODYNUM)
         {
             acceleration = -((NORM(dist.x, dist.y, dist.z) - NORM(distRelative.x, distRelative.y, distRelative.z)) * ELASTIC_CONSTANT_PLANETS) / sim->bodiesList[i].mass;
@@ -242,4 +242,5 @@ static void updateUsingSprings(OrbitalSim *sim)
     {
         sim->bodiesList[i].position += sim->bodiesList[i].velocity * sim->timeStep;
     }
+
 }
