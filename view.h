@@ -8,7 +8,7 @@
 #ifndef ORBITALSIMVIEW_H
 #define ORBITALSIMVIEW_H
 
-#include <raylib.h>
+
 
 #include "configuration.h"
 #include "orbitalSim.h"
@@ -25,6 +25,6 @@ void setup_3D_view(View *view);
 void destroyView(View *view);
 
 bool isViewRendering(View *view);
-void renderView(View *view, OrbitalSim *sim, int simType);
+void renderView(View *view, OrbitalSim *sim, resource_t * Master_resource, int simType);
 
 #endif

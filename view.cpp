@@ -16,10 +16,8 @@
 #define SETUP_WINDOW_HEIGHT 480
 #define CAMERA_RANGE 15
 
-Model Pepsi_can;
-
-static void renderStandardSimulation(View *view, OrbitalSim *sim);
-static void renderPepsiSimulation(View *view, OrbitalSim *sim);
+static void renderStandardSimulation(View *view, OrbitalSim *sim, resource_t *Master_resource);
+static void renderPepsiSimulation(View *view, OrbitalSim *sim, resource_t *Master_resource);
 
 /**
  * @brief Converts a timestamp (number of seconds since 1/1/2022)
@@ -62,8 +60,6 @@ View *constructView(int *fps, monitor_t *monitor) {
 
   SetTargetFPS(*fps);
 
-  Pepsi_can = LoadModel("./Models/Pepsi_Basic/Pepsi_Can.obj"); // Ignore
-
   return view;
 }
 
@@ -83,7 +79,6 @@ void setup_3D_view(View *view) {
  * @param view The view
  */
 void destroyView(View *view) {
-  UnloadModel(Pepsi_can);
   CloseWindow();
 
   delete view;
@@ -105,18 +100,18 @@ bool isViewRendering(View *view) {
  * @param sim The orbital sim
  */
 
-void renderView(View *view, OrbitalSim *sim, int simType) {
+void renderView(View *view, OrbitalSim *sim, resource_t *Master_resource, int simType) {
   if ( simType == 0 )
   {
-    renderStandardSimulation(view, sim);
+    renderStandardSimulation(view, sim, Master_resource);
   }
   else if ( simType == 1 )
   {
-    renderPepsiSimulation(view, sim);
+    renderPepsiSimulation(view, sim, Master_resource);
   }
 }
 
-static void renderStandardSimulation(View *view, OrbitalSim *sim) {
+static void renderStandardSimulation(View *view, OrbitalSim *sim, resource_t *Master_resource) {
   UpdateCamera(&view->camera, CAMERA_FREE);
 
   BeginDrawing();
@@ -160,7 +155,7 @@ static void renderStandardSimulation(View *view, OrbitalSim *sim) {
   EndDrawing();
 }
 
-static void renderPepsiSimulation(View *view, OrbitalSim *sim) {
+static void renderPepsiSimulation(View *view, OrbitalSim *sim, resource_t *Master_resource) {
   UpdateCamera(&view->camera, CAMERA_FREE);
 
   BeginDrawing();
@@ -170,11 +165,11 @@ static void renderPepsiSimulation(View *view, OrbitalSim *sim) {
 
   static float rotation;
 
-  DrawModelEx(Pepsi_can, sim->bodiesList[0].position * (1E-11), {0, 1, 0}, -100 + rotation, {0.05, 0.05, 0.05}, WHITE);
+  DrawModelEx(Master_resource->Model_PepsiCan, sim->bodiesList[0].position * (1E-11), {0, 1, 0}, -100 + rotation, {0.05, 0.05, 0.05}, WHITE);
 
   for ( int i = 1; i < 9; i++ )
   {
-    DrawModelEx(Pepsi_can, sim->bodiesList[i].position * (1E-11), {0, 1, 0}, -100 + rotation, {0.01, 0.01, 0.01}, WHITE);
+    DrawModelEx(Master_resource->Model_PepsiCan, sim->bodiesList[i].position * (1E-11), {0, 1, 0}, -100 + rotation, {0.01, 0.01, 0.01}, WHITE);
   }
   for ( int i = 9; i < sim->bodyCount; i++ )
   {

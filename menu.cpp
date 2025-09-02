@@ -10,42 +10,33 @@
 #include <chrono>
 #include <stdio.h>
 
-#define TYPE_COUNTER 3
 #define TOGGLE_LIMIT 6
 
-typedef struct {
-  Font Font_Gothic;
-  Font Font_Golden;
-  Font Font_Typerwriter;
-
-  Sound Typewriter_forward[TYPE_COUNTER];
-  Sound Typewriter_backward[TYPE_COUNTER];
-} resource;
-
-static void intialize_resources(resource *Master_resource);
-static void kill_resources(resource *Master_resource);
+static void intialize_resources(resource_t *Master_resource);
 static long long timestamp_millis();
-static void animation_intro(resource *Master_resource, monitor_t *monitor);
+static void animation_intro(resource_t *Master_resource, monitor_t *monitor);
 
 /**
- * @name menu
+ * @name intro
  *
- * @brief Master function for menu browsing. Applies animations, logic and resources.
+ * @brief Master function for the intro. Applies animations, logic and resources.
  *
  * @param simVisualType: Pointer to enumerator which indicates how the models should look like.
  * @param simLocgicalType: Pointer to enumerator which indicates which mathematical model should be used.
  * @param view: Graphical interface.
  */
 
-void menu(visual_sim_type_t *simVisualType, logical_sim_type_t *simLogicalType, View *view, monitor_t *monitor) {
+resource_t *intro(visual_sim_type_t *simVisualType, logical_sim_type_t *simLogicalType, View *view, monitor_t *monitor) {
 
-  resource Master_resource;
+  resource_t *Master_resource = new resource_t;
 
-  intialize_resources(&Master_resource);
+  intialize_resources(Master_resource);
 
-  animation_intro(&Master_resource, monitor);
+  animation_intro(Master_resource, monitor);
 
-  kill_resources(&Master_resource);
+  // kill_resources(Master_resource);
+
+  return Master_resource;
 }
 
 /**
@@ -56,16 +47,18 @@ void menu(visual_sim_type_t *simVisualType, logical_sim_type_t *simLogicalType, 
  * @param Master_resource: Pointer to struct holding the resources' information.
  */
 
-static void intialize_resources(resource *Master_resource) {
+static void intialize_resources(resource_t *Master_resource) {
 
-  Master_resource->Font_Gothic = LoadFontEx("./Fonts/Gothic_regular.ttf", 32, 0, 250);
-  Master_resource->Font_Golden = LoadFontEx("./Fonts/Golden.otf", 64, 0, 250);
-  Master_resource->Font_Typerwriter = LoadFontEx("./Fonts/TypeWriter.ttf", 64, 0, 250);
+  Master_resource->Font_Gothic = LoadFontEx(FONTS_LOCATE("Gothic_regular.ttf"), 32, 0, 250);
+  Master_resource->Font_Golden = LoadFontEx(FONTS_LOCATE("Golden.otf"), 64, 0, 250);
+  Master_resource->Font_Typerwriter = LoadFontEx(FONTS_LOCATE("TypeWriter.ttf"), 64, 0, 250);
+
+  Master_resource->Model_PepsiCan = LoadModel(MODELS_LOCATE("Pepsi_Basic/Pepsi_Can.obj")); // Ignore
 
   for ( int i = 0; i < TYPE_COUNTER; i++ )
   {
-    Master_resource->Typewriter_forward[i] = LoadSound("./Audio/Typewriter_forward.wav");
-    Master_resource->Typewriter_backward[i] = LoadSound("./Audio/Typewriter_backward.wav");
+    Master_resource->Typewriter_forward[i] = LoadSound(AUDIO_LOCATE("Typewriter_forward.wav"));
+    Master_resource->Typewriter_backward[i] = LoadSound(AUDIO_LOCATE("Typewriter_backward.wav"));
   }
 }
 
@@ -77,7 +70,7 @@ static void intialize_resources(resource *Master_resource) {
  * @param Master_resource: Pointer to struct holding the resources' information.
  */
 
-static void kill_resources(resource *Master_resource) {
+void kill_resources(resource_t *Master_resource) {
 
   UnloadFont(Master_resource->Font_Gothic);
   UnloadFont(Master_resource->Font_Golden);
@@ -113,7 +106,7 @@ static long long timestamp_millis() {
  * @param Master_resource: Pointer to struct holding the resources' information.
  */
 
-static void animation_intro(resource *Master_resource, monitor_t *monitor) {
+static void animation_intro(resource_t *Master_resource, monitor_t *monitor) {
 
   long long timer_1, timer_2, timer_3;
 

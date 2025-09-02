@@ -9,4 +9,6 @@
 #include "configuration.h"
 #include "view.h"
 
-void menu(visual_sim_type_t *simVisualType, logical_sim_type_t *simLogicalType, View *view, monitor_t* monitor);
+resource_t *intro(visual_sim_type_t *simVisualType, logical_sim_type_t *simLogicalType, View *view, monitor_t *monitor);
+
+void kill_resources(resource_t *Master_resource);

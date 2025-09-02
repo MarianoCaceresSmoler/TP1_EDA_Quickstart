@@ -6,6 +6,15 @@
 #ifndef CONFIGURATION_H
 #define CONFIGURATION_H
 
+#include <raylib.h>
+
+#define ASSETS_SOURCE(x) "./Assets/" x
+#define MODELS_LOCATE(model_file) ASSETS_SOURCE("Models/" model_file)
+#define FONTS_LOCATE(font_file) ASSETS_SOURCE("Fonts/" font_file)
+#define AUDIO_LOCATE(audio_file) ASSETS_SOURCE("Audio/" audio_file)
+#define SHADER_LOCATE(shader_file) ASSETS_SOURCE("Shaders/" shader_file)
+#define TYPE_COUNTER 3
+
 typedef enum { SIM_STANDBY,
                PLANETS_SIMULATION,
                PEPSI_SIMULATION } visual_sim_type_t;
@@ -14,10 +23,23 @@ typedef enum { LOGIC_STANDBY,
                SPRINGS_SIMULATION } logical_sim_type_t;
 
 typedef struct {
-	float current;
-	float width;
-	float height;
-	float refresh_rate;
-}monitor_t;
+  float current;
+  float width;
+  float height;
+  float refresh_rate;
+} monitor_t;
+
+typedef struct {
+  Font Font_Gothic;
+  Font Font_Golden;
+  Font Font_Typerwriter;
+
+  Sound Typewriter_forward[TYPE_COUNTER];
+  Sound Typewriter_backward[TYPE_COUNTER];
+
+  Model Model_PepsiCan;
+
+  Shader Shader_blur;
+} resource_t;
 
 #endif

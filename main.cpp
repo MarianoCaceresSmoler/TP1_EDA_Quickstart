@@ -31,7 +31,7 @@ int main() {
 
   InitAudioDevice();
 
-  menu(&simVisualType, &simLogicalType, view, &monitor);
+  resource_t *Master_resource = intro(&simVisualType, &simLogicalType, view, &monitor);
 
   setup_3D_view(view);
 
@@ -42,7 +42,7 @@ int main() {
     for ( int i = 0; i < subSteps; i++ ) // multiple updates per frame
       updateOrbitalSim(sim, simLogicalType);
 
-    renderView(view, sim, simVisualType);
+    renderView(view, sim, Master_resource, simVisualType);
   }
 
   destroyView(view);
@@ -50,6 +50,8 @@ int main() {
   CloseAudioDevice();
 
   std ::cout << monitor.current << "\t" << monitor.height << "\t" << monitor.refresh_rate << "\t" << monitor.width;
+
+  kill_resources(Master_resource);
 
   return 0;
 }
