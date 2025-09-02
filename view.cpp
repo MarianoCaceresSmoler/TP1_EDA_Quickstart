@@ -61,9 +61,9 @@ View *constructView(int *fps, monitor_t *monitor)
 
 	*fps = monitor->refresh_rate;
 
-  SetTargetFPS(*fps);
+	SetTargetFPS(*fps);
 
-  return view;
+	return view;
 }
 
 void setup_3D_view(View *view)
@@ -82,8 +82,9 @@ void setup_3D_view(View *view)
  *
  * @param view The view
  */
-void destroyView(View *view) {
-  CloseWindow();
+void destroyView(View *view)
+{
+	CloseWindow();
 
 	delete view;
 }
@@ -105,19 +106,21 @@ bool isViewRendering(View *view)
  * @param sim The orbital sim
  */
 
-void renderView(View *view, OrbitalSim *sim, resource_t *Master_resource, int simType) {
-  if ( simType == 0 )
-  {
-    renderStandardSimulation(view, sim, Master_resource);
-  }
-  else if ( simType == 1 )
-  {
-    renderPepsiSimulation(view, sim, Master_resource);
-  }
+void renderView(View *view, OrbitalSim *sim, resource_t *Master_resource, int simType)
+{
+	if (simType == 0)
+	{
+		renderStandardSimulation(view, sim, Master_resource);
+	}
+	else if (simType == 1)
+	{
+		renderPepsiSimulation(view, sim, Master_resource);
+	}
 }
 
-static void renderStandardSimulation(View *view, OrbitalSim *sim, resource_t *Master_resource) {
-  UpdateCamera(&view->camera, CAMERA_FREE);
+static void renderStandardSimulation(View *view, OrbitalSim *sim, resource_t *Master_resource)
+{
+	UpdateCamera(&view->camera, CAMERA_FREE);
 
 	BeginDrawing();
 
@@ -167,8 +170,9 @@ static void renderStandardSimulation(View *view, OrbitalSim *sim, resource_t *Ma
 	EndDrawing();
 }
 
-static void renderPepsiSimulation(View *view, OrbitalSim *sim, resource_t *Master_resource) {
-  UpdateCamera(&view->camera, CAMERA_FREE);
+static void renderPepsiSimulation(View *view, OrbitalSim *sim, resource_t *Master_resource)
+{
+	UpdateCamera(&view->camera, CAMERA_FREE);
 
 	BeginDrawing();
 
@@ -177,16 +181,16 @@ static void renderPepsiSimulation(View *view, OrbitalSim *sim, resource_t *Maste
 
 	static float rotation;
 
-  DrawModelEx(Master_resource->Model_PepsiCan, sim->bodiesList[0].position * (1E-11), {0, 1, 0}, -100 + rotation, {0.05, 0.05, 0.05}, WHITE);
+	DrawModelEx(Master_resource->Model_PepsiCan, sim->bodiesList[0].position * (1E-11), {0, 1, 0}, -100 + rotation, {0.05, 0.05, 0.05}, WHITE);
 
-  for ( int i = 1; i < 9; i++ )
-  {
-    DrawModelEx(Master_resource->Model_PepsiCan, sim->bodiesList[i].position * (1E-11), {0, 1, 0}, -100 + rotation, {0.01, 0.01, 0.01}, WHITE);
-  }
-  for ( int i = 9; i < sim->bodyCount; i++ )
-  {
-    Vector3 scaledBodyPos = sim->bodiesList[i].position * 1E-11f;
-    Vector3 cameraPos = view->camera.position;
+	for (int i = 1; i < 9; i++)
+	{
+		DrawModelEx(Master_resource->Model_PepsiCan, sim->bodiesList[i].position * (1E-11), {0, 1, 0}, -100 + rotation, {0.01, 0.01, 0.01}, WHITE);
+	}
+	for (int i = 9; i < sim->bodyCount; i++)
+	{
+		Vector3 scaledBodyPos = sim->bodiesList[i].position * 1E-11f;
+		Vector3 cameraPos = view->camera.position;
 
 		Vector3 diff = {
 			scaledBodyPos.x - cameraPos.x,
