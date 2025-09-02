@@ -6,8 +6,6 @@
 * Francisco Chiusaroli: completado de modelos y realizacion de testeos
 * Enzo Nicolás Rosa Fernández: manejo de graficos y renderizado con raylib
 
-[completar]
-
 ## Verificación del timestep
 
 Probamos cambiando el timeMultiplier multiplicando por números cada mes más grandes, así cambiando el timeStep: timeMultiplier = 10* SECONDS_PER_DAY, 100 * SECONDS_PER_DAY y 1000 * SECONDS_PER_DAY.
@@ -69,3 +67,4 @@ De esta forma, pasamos de un O(n²) a aproximadamente O(n) (1 for de n repeticio
 ## Bonus points
 
 [completar]
+
