@@ -137,14 +137,14 @@ void destroyOrbitalSim(OrbitalSim *sim)
  */
 void updateOrbitalSim(OrbitalSim *sim, int simType)
 {
-    if(simType == 0)
+    if (simType == 0)
     {
         updateUsingGravity(sim);
     }
     else
     {
         updateUsingSprings(sim);
-    }  
+    }
 }
 
 static void updateUsingGravity(OrbitalSim *sim)
@@ -153,8 +153,6 @@ static void updateUsingGravity(OrbitalSim *sim)
     Vector3 gravAcc;
     Vector3 acceleration;
     float norm;
-    float mostMassiveBody, biggestMass = 0;
-    int j;
 
     sim->totalTime += sim->timeStep;
 
@@ -163,35 +161,16 @@ static void updateUsingGravity(OrbitalSim *sim)
         acceleration = {0, 0, 0};
         sim->bodiesList[i].position += sim->bodiesList[i].velocity * sim->timeStep;
 
-        if (biggestMass < sim->bodiesList[i].mass)
+        for (int j = 0; j < SOLARSYSTEM_BODYNUM; j++)
         {
-            biggestMass = sim->bodiesList[i].mass;
-            mostMassiveBody = i;
-        }
-
-        if (i < SOLARSYSTEM_BODYNUM)
-        {
-            for (int j = 0; j < SOLARSYSTEM_BODYNUM; j++)
+            if (i != j)
             {
-                if (i != j)
+                norm = NORM(sim->bodiesList[i].position.x - sim->bodiesList[j].position.x, sim->bodiesList[i].position.y - sim->bodiesList[j].position.y, sim->bodiesList[i].position.z - sim->bodiesList[j].position.z);
+                if (norm != 0)
                 {
-                    norm = NORM(sim->bodiesList[i].position.x - sim->bodiesList[j].position.x, sim->bodiesList[i].position.y - sim->bodiesList[j].position.y, sim->bodiesList[i].position.z - sim->bodiesList[j].position.z);
-                    if (norm != 0)
-                    {
-                        gravAcc = ((sim->bodiesList[i].position - sim->bodiesList[j].position) * (-GRAVITATIONAL_CONSTANT * sim->bodiesList[j].mass)) / (norm * norm * norm);
-                        acceleration += gravAcc;
-                    }
+                    gravAcc = ((sim->bodiesList[i].position - sim->bodiesList[j].position) * (-GRAVITATIONAL_CONSTANT * sim->bodiesList[j].mass)) / (norm * norm * norm);
+                    acceleration += gravAcc;
                 }
-            }
-        }
-        else
-        {
-            int j = mostMassiveBody;
-            norm = NORM(sim->bodiesList[i].position.x - sim->bodiesList[j].position.x, sim->bodiesList[i].position.y - sim->bodiesList[j].position.y, sim->bodiesList[i].position.z - sim->bodiesList[j].position.z);
-            if (norm != 0)
-            {
-                gravAcc = ((sim->bodiesList[i].position - sim->bodiesList[j].position) * (-GRAVITATIONAL_CONSTANT * sim->bodiesList[j].mass)) / (norm * norm * norm);
-                acceleration += gravAcc;
             }
         }
 
