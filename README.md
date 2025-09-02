@@ -2,9 +2,9 @@
 
 ## Integrantes del grupo y contribución al trabajo de cada integrante
 
-* Mariano Cáceres Smoler: [contribucion]
-* Francisco Chiusaroli: [contribucion]
-* Enzo Nicolás Rosa Fernández: [contribucion]
+* Mariano Cáceres Smoler: armado de algoritmo optimizado y documentacion
+* Francisco Chiusaroli: completado de modelos y realizacion de testeos
+* Enzo Nicolás Rosa Fernández: manejo de graficos y renderizado con raylib
 
 [completar]
 
@@ -57,17 +57,15 @@ y con 1000 ya superamos el millón.
 
 ## Mejora de la complejidad computacional
 
-En primer lugar, notamos que el cuello de botella en los graficos viene dado por la funcion de DrawSphere. Cambiamos esta por la funcion DrawSphereEx, que usamos para reducir la resolucion de la esfera dibujada. Ademas, definimos un rango para la distancia de la camara, para que los cuerpos se dibujaran como puntos y no como esferas definidas cuando la camara supere cierto limite.
+En primer lugar, notamos que el cuello de botella en los graficos viene dado por la funcion de DrawSphere. Lo que hicimos para mejorar esto fue definir 3 rangos de vision, teniendo en cuenta la distancia de la camara a cada objeto. Para la distancia mas corta, seguimos usando DrawSphere. Para una distancia media, usamos 
+DrawSphereEx, que reduce bastante la resolucion de la esfera dibujada pero todavia queda algo definida. Y por ultimo, para la distancia larga, dibujamos los cuerpos solo como puntos y no como esferas.
 
 Por otro lado, para recudir la complejidad computacional, hicimos dos simplificaciones:
 - Para los planetas y el sol: calculamos la atraccion gravitatoria unicamente entre ellos mismos.
-- Para los asteroides: calculamos la atraccion gravitatoria unicamente con el sol
+- Para los asteroides: calculamos la atraccion gravitatoria unicamente con el sol y el resto de planetas
 
-De esta forma, pasamos de un O(n²) a aproximadamente O(n) (1 for de n repeticiones + 2 fors que suman 9*9 = 81 iteraciones), perdiendo un poco de precision para los asteroides sobre todo, pero que no es tan tan relevante por la diferencia de masa de los cuerpos.
-
+De esta forma, pasamos de un O(n²) a aproximadamente O(n) (1 for de n repeticiones con otro fo interno de solo 9 iteraciones, dando como resultado 9*n iteraciones). Asi, se pierde alg de precision para los asteroides sobre todo, pero que no es tan tan relevante por la diferencia de masa de los cuerpos.
 
 ## Bonus points
 
 [completar]
-
-## COMENTAR TODO AL FINAL
