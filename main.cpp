@@ -13,57 +13,72 @@
 
 #define SECONDS_PER_DAY 86400
 
-int main() {
+int main()
+{
 
-  monitor_t monitor;
+	monitor_t monitor;
 
-  visual_sim_type_t simVisualType = SIM_STANDBY;
-  logical_sim_type_t simLogicalType = LOGIC_STANDBY;
+	visual_sim_type_t simVisualType = SIM_STANDBY;
+	logical_sim_type_t simLogicalType = LOGIC_STANDBY;
 
-  int fps = monitor.refresh_rate; // Frames per second
+	int fps = monitor.refresh_rate; // Frames per second
 
-  View *view = constructView(&fps, &monitor);
+	View *view = constructView(&fps, &monitor);
 
-  float timeMultiplier = 10 * SECONDS_PER_DAY; // Simulation speed: 10 days per simulation second
-  float timeStep = timeMultiplier / fps;
+	float timeMultiplier = 10 * SECONDS_PER_DAY; // Simulation speed: 10 days per simulation second
+	float timeStep = timeMultiplier / fps;
 
-  OrbitalSim *sim = constructOrbitalSim(timeStep);
+	OrbitalSim *sim = constructOrbitalSim(timeStep);
 
-  InitAudioDevice();
+	InitAudioDevice();
 
-  resource_t *Master_resource = intro(&simVisualType, &simLogicalType, view, &monitor);
+	resource_t *Master_resource = intro(&simVisualType, &simLogicalType, view, &monitor);
 
-//   float blurStrength = 1.0f;
-//   SetShaderValue(Master_resource->Shader_blur, Master_resource->Shader_blur_intensity_location, &blurStrength, SHADER_UNIFORM_FLOAT);
+	//   float blurStrength = 1.0f;
+	//   SetShaderValue(Master_resource->Shader_blur, Master_resource->Shader_blur_intensity_location, &blurStrength, SHADER_UNIFORM_FLOAT);
 
-  setup_3D_view(view);
+	setup_3D_view(view);
 
-  int subSteps = 10;
+	int subSteps = 10;
 
-  while ( isViewRendering(view) )
-  {
-    for ( int i = 0; i < subSteps; i++ ) // multiple updates per frame
-      updateOrbitalSim(sim, simLogicalType);
+	keyboartInputs_t inputs;
 
-    renderView(view, sim, Master_resource, simVisualType);
+	while (isViewRendering(view))
+	{
+		if (IsKeyDown(KEY_RIGHT)) inputs.keyRight = 1;
+        if (IsKeyDown(KEY_LEFT)) inputs.keyLeft = 1;
+        if (IsKeyDown(KEY_UP)) inputs.keyUp = 1;
+        if (IsKeyDown(KEY_DOWN)) inputs.keyDown = 1;
 
-    BeginDrawing();
+		updateSpaceShip(sim->ship, inputs, sim->timeStep);
 
-    ClearBackground(BLACK);
-//     BeginShaderMode(Master_resource->Shader_blur);
-     DrawTextureRec(Master_resource->Texture_Buffer.texture, (Rectangle) {0, 0, (float) Master_resource->Texture_Buffer.texture.width, (float) -Master_resource->Texture_Buffer.texture.height}, (Vector2) {0, 0}, WHITE);
+		for (int i = 0; i < subSteps; i++) // multiple updates per frame
+			updateOrbitalSim(sim, simLogicalType);
 
-//     EndShaderMode();
-    EndDrawing();
-  }
+		renderView(view, sim, Master_resource, simVisualType);
 
-  destroyView(view);
-  destroyOrbitalSim(sim);
-  CloseAudioDevice();
+		BeginDrawing();
 
-  std ::cout << monitor.current << "\t" << monitor.height << "\t" << monitor.refresh_rate << "\t" << monitor.width;
+		ClearBackground(BLACK);
+		//     BeginShaderMode(Master_resource->Shader_blur);
+		DrawTextureRec(Master_resource->Texture_Buffer.texture, (Rectangle){0, 0, (float)Master_resource->Texture_Buffer.texture.width, (float)-Master_resource->Texture_Buffer.texture.height}, (Vector2){0, 0}, WHITE);
 
-  kill_resources(Master_resource);
+		//     EndShaderMode();
+		EndDrawing();
 
-  return 0;
+		inputs.keyRight = 0;
+        inputs.keyLeft = 0;
+        inputs.keyUp = 0;
+        inputs.keyDown = 0;
+	}
+
+	destroyView(view);
+	destroyOrbitalSim(sim);
+	CloseAudioDevice();
+
+	std ::cout << monitor.current << "\t" << monitor.height << "\t" << monitor.refresh_rate << "\t" << monitor.width;
+
+	kill_resources(Master_resource);
+
+	return 0;
 }

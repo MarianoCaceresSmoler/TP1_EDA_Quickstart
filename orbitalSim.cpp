@@ -11,7 +11,8 @@
 #define NORM(x, y, z) (sqrt(((x) * (x)) + ((y) * (y)) + ((z) * (z))))
 
 #include <math.h>
-#include <stdio.h>
+#include <iostream>
+#include <cmath>
 #include <stdlib.h>
 
 #include "configuration.h"
@@ -23,7 +24,6 @@
 #define ELASTIC_CONSTANT_ASTEROIDS 5e-2
 #define ASTEROIDS_MEAN_RADIUS 4E11F
 #define ASTEROIDS_BODYNUM 1000
-#define ULTRA_MASSIVE 1988500E24F
 
 /**
  * @brief Updates simulation using gravitational force model
@@ -55,7 +55,7 @@ float getRandomFloat(float min, float max)
  * @param body An orbital body
  * @param centerMass The mass of the most massive object in the star system
  */
-void configureAsteroid(OrbitalBody *body, float centerMass)
+void configureAsteroid(OrbitalBody * body, float centerMass)
 {
     // Logit distribution
     float x = getRandomFloat(0.1, 1);
@@ -82,6 +82,28 @@ void configureAsteroid(OrbitalBody *body, float centerMass)
 }
 
 /**
+ * @brief Configures an asteroid
+ *
+ * @param body An orbital body
+ * @param centerMass The mass of the most massive object in the star system
+ */
+void configureSpaceShip(SpaceShip * ship)
+{
+    // Logit distribution
+    float x = getRandomFloat(0.1, 1);
+    float l = logf(x) - logf(1 - x) + 1;
+
+    float r = 4 * ASTEROIDS_MEAN_RADIUS * sqrtf(fabsf(l));
+    float phi = getRandomFloat(0, 2.0F * (float)M_PI);
+
+    ship->mass = 1e5f;  // Typical spaeship weight: 100000ks
+    ship->position = {r * cosf(phi), 0, r * sinf(phi)};
+    ship->initialPosition = ship->position;
+    ship->velocity = {0, 0, 0};
+}
+
+
+/**
  * @brief Constructs an orbital simulation
  *
  * @param float The time step
@@ -97,6 +119,8 @@ OrbitalSim *constructOrbitalSim(float timeStep)
         simulation->totalTime = 0;
         simulation->bodyCount = SOLARSYSTEM_BODYNUM + ASTEROIDS_BODYNUM;
         simulation->bodiesList = new OrbitalBody[simulation->bodyCount];
+        simulation->ship = new SpaceShip();
+        configureSpaceShip(simulation->ship);
 
         if (simulation->bodiesList)
         {
@@ -128,6 +152,7 @@ OrbitalSim *constructOrbitalSim(float timeStep)
 void destroyOrbitalSim(OrbitalSim *sim)
 {
     delete[] sim->bodiesList;
+    delete sim->ship;
     delete sim;
 }
 
@@ -242,5 +267,27 @@ static void updateUsingSprings(OrbitalSim *sim)
     {
         sim->bodiesList[i].position += sim->bodiesList[i].velocity * sim->timeStep;
     }
+
+}
+
+void updateSpaceShip(SpaceShip *ship, keyboartInputs_t inputs, float timeStep)
+{
+    float thrust = 50.0E3f;
+    Vector3 thrustForce = {0, 0, 0};
+
+    // Horizonal  movement (X-Z)
+    if (inputs.keyUp)    thrustForce.z -= thrust;
+    if (inputs.keyDown)  thrustForce.z += thrust;
+    if (inputs.keyLeft)  thrustForce.x -= thrust;
+    if (inputs.keyRight) thrustForce.x += thrust; 
+
+    Vector3 acceleration = thrustForce / ship->mass;    
+
+    // Updates
+    ship->velocity += acceleration * timeStep;
+    ship->position += ship->velocity * timeStep;
+
+    std::cout << "Pos: (" << ship->position.x << "," << ship->position.y << "," << ship->position.z << ")";
+    std::cout << " Vel: (" << ship->velocity.x << "," << ship->velocity.y << "," << ship->velocity.z << ")" << std::endl;
 
 }
