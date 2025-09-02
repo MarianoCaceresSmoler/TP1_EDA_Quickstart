@@ -38,8 +38,19 @@ typedef struct {
   Sound Typewriter_backward[TYPE_COUNTER];
 
   Model Model_PepsiCan;
+  Model Model_SpaceShip;
 
-  Shader Shader_blur;
+  Shader Shader_blur_h;
+  int Shader_blur_h_intensity_location;
+  int Shader_blur_h_renderWidth;
+  int Shader_blur_h_renderHeight;
+
+  Shader Shader_blur_v;
+  int Shader_blur_v_intensity_location;
+  int Shader_blur_v_renderWidth;
+  int Shader_blur_v_renderHeight;
+
+  RenderTexture2D Texture_Buffer;
 } resource_t;
 
 #endif

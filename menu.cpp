@@ -12,7 +12,7 @@
 
 #define TOGGLE_LIMIT 6
 
-static void intialize_resources(resource_t *Master_resource);
+static void intialize_resources(resource_t *Master_resource, monitor_t *monitor);
 static long long timestamp_millis();
 static void animation_intro(resource_t *Master_resource, monitor_t *monitor);
 
@@ -30,11 +30,14 @@ resource_t *intro(visual_sim_type_t *simVisualType, logical_sim_type_t *simLogic
 
   resource_t *Master_resource = new resource_t;
 
-  intialize_resources(Master_resource);
+  intialize_resources(Master_resource, monitor);
 
   animation_intro(Master_resource, monitor);
 
   // kill_resources(Master_resource);
+
+  *simVisualType = PEPSI_SIMULATION;
+  *simLogicalType = SPRINGS_SIMULATION;
 
   return Master_resource;
 }
@@ -47,19 +50,25 @@ resource_t *intro(visual_sim_type_t *simVisualType, logical_sim_type_t *simLogic
  * @param Master_resource: Pointer to struct holding the resources' information.
  */
 
-static void intialize_resources(resource_t *Master_resource) {
+static void intialize_resources(resource_t *Master_resource, monitor_t *monitor) {
 
   Master_resource->Font_Gothic = LoadFontEx(FONTS_LOCATE("Gothic_regular.ttf"), 32, 0, 250);
   Master_resource->Font_Golden = LoadFontEx(FONTS_LOCATE("Golden.otf"), 64, 0, 250);
   Master_resource->Font_Typerwriter = LoadFontEx(FONTS_LOCATE("TypeWriter.ttf"), 64, 0, 250);
 
   Master_resource->Model_PepsiCan = LoadModel(MODELS_LOCATE("Pepsi_Basic/Pepsi_Can.obj")); // Ignore
+  Master_resource->Model_SpaceShip = LoadModel(MODELS_LOCATE("Pepsi_Basic/Pepsi_Can.obj"));
+
+  //   Master_resource->Shader_blur = LoadShader(0, SHADER_LOCATE("Shader_Blur.fs"));
+  //   Master_resource->Shader_blur_intensity_location = GetShaderLocation(Master_resource->Shader_blur, "blurStrength");
 
   for ( int i = 0; i < TYPE_COUNTER; i++ )
   {
     Master_resource->Typewriter_forward[i] = LoadSound(AUDIO_LOCATE("Typewriter_forward.wav"));
     Master_resource->Typewriter_backward[i] = LoadSound(AUDIO_LOCATE("Typewriter_backward.wav"));
   }
+
+  Master_resource->Texture_Buffer = LoadRenderTexture(monitor->width, monitor->height);
 }
 
 /**
@@ -76,11 +85,20 @@ void kill_resources(resource_t *Master_resource) {
   UnloadFont(Master_resource->Font_Golden);
   UnloadFont(Master_resource->Font_Typerwriter);
 
+  UnloadModel(Master_resource->Model_PepsiCan);
+  UnloadModel(Master_resource->Model_SpaceShip);
+
+  //   UnloadShader(Master_resource->Shader_blur);
+
+  UnloadRenderTexture(Master_resource->Texture_Buffer);
+
   for ( int i = 0; i < TYPE_COUNTER; i++ )
   {
     UnloadSound(Master_resource->Typewriter_forward[i]);
     UnloadSound(Master_resource->Typewriter_backward[i]);
   }
+
+  delete Master_resource;
 }
 
 /**
