@@ -60,7 +60,7 @@ DrawSphereEx, que reduce bastante la resolucion de la esfera dibujada pero todav
 
 Por otro lado, para recudir la complejidad computacional, hicimos dos simplificaciones:
 - Para los planetas y el sol: calculamos la atraccion gravitatoria unicamente entre ellos mismos.
-- Para los asteroides: calculamos la atraccion gravitatoria unicamente con el sol y el resto de planetas
+- Para los asteroides: calculamos la atraccion gravitatoria unicamente con el cuerpo mas masivo
 
 De esta forma, pasamos de un O(n²) a aproximadamente O(n) (1 for de n repeticiones con otro fo interno de solo 9 iteraciones, dando como resultado 9*n iteraciones). Asi, se pierde alg de precision para los asteroides sobre todo, pero que no es tan tan relevante por la diferencia de masa de los cuerpos.
 
