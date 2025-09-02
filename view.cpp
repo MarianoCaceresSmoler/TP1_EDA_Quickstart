@@ -14,8 +14,8 @@
 
 #define SETUP_WINDOW_WIDTH 640
 #define SETUP_WINDOW_HEIGHT 480
-#define CAMERA_SHORT_RANGE 2
-#define CAMERA_MEDIUM_RANGE 15
+#define CAMERA_SHORT_RANGE 5
+#define CAMERA_MEDIUM_RANGE 150
 
 static void renderStandardSimulation(View *view, OrbitalSim *sim, resource_t *Master_resource);
 static void renderPepsiSimulation(View *view, OrbitalSim *sim, resource_t *Master_resource);
@@ -68,7 +68,7 @@ void setup_3D_view(View *view) {
   DisableCursor();
 
   view->camera.position = {10.0f, 10.0f, 10.0f};
-  view->camera.target = {0.0f, 10.0f, 0.0f};
+  view->camera.target = {0.0f, 0.0f, 0.0f};
   view->camera.up = {0.0f, 1.0f, 0.0f};
   view->camera.fovy = 45.0f;
   view->camera.projection = CAMERA_PERSPECTIVE;
@@ -113,9 +113,9 @@ void renderView(View *view, OrbitalSim *sim, resource_t *Master_resource, int si
 }
 
 static void renderStandardSimulation(View *view, OrbitalSim *sim, resource_t *Master_resource) {
-  UpdateCamera(&view->camera, CAMERA_FREE);
+//   UpdateCamera(&view->camera, CAMERA_FREE);
 
-  BeginTextureMode(Master_resource->Texture_Buffer);
+  BeginTextureMode(Master_resource->Texture_Buffer1);
   ClearBackground(BLACK);
   BeginMode3D(view->camera);
 
@@ -155,19 +155,18 @@ static void renderStandardSimulation(View *view, OrbitalSim *sim, resource_t *Ma
 
   DrawGrid(10, 10.0f);
 
-
   EndMode3D();
-  
-  DrawFPS(0, 0);
-  DrawText(getISODate(sim->totalTime), 0, 25, 20, RED);
+
+//   DrawFPS(0, 0);
+//   DrawText(getISODate(sim->totalTime), 0, 25, 20, RED);
 
   EndTextureMode();
 }
 
 static void renderPepsiSimulation(View *view, OrbitalSim *sim, resource_t *Master_resource) {
-  UpdateCamera(&view->camera, CAMERA_FREE);
+//   UpdateCamera(&view->camera, CAMERA_FREE);
 
-  BeginTextureMode(Master_resource->Texture_Buffer);
+  BeginTextureMode(Master_resource->Texture_Buffer1);
 
   ClearBackground(BLACK);
   BeginMode3D(view->camera);
@@ -205,9 +204,6 @@ static void renderPepsiSimulation(View *view, OrbitalSim *sim, resource_t *Maste
 
   DrawGrid(10, 10.0f);
   EndMode3D();
-
-  DrawFPS(0, 0);
-  DrawText(getISODate(sim->totalTime), 0, 25, 20, RED);
 
   EndTextureMode();
 }

@@ -50,7 +50,9 @@ typedef struct {
   int Shader_blur_v_renderWidth;
   int Shader_blur_v_renderHeight;
 
-  RenderTexture2D Texture_Buffer;
+  RenderTexture2D Texture_Buffer1;
+  RenderTexture2D Texture_Buffer2;
+
 } resource_t;
 
 #endif

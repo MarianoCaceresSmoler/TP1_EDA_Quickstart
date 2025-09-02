@@ -12,6 +12,7 @@
 #include <iostream>
 
 #define SECONDS_PER_DAY 86400
+#define MAX_GRADIENT 255
 
 int main() {
 
@@ -22,10 +23,16 @@ int main() {
 
   int fps = monitor.refresh_rate; // Frames per second
 
+  bool temp_skip = 0;
+
+  unsigned char gradient = 255;
+
   View *view = constructView(&fps, &monitor);
 
   float timeMultiplier = 10 * SECONDS_PER_DAY; // Simulation speed: 10 days per simulation second
   float timeStep = timeMultiplier / fps;
+
+  float blur_gradient = MAX_GRADIENT - 20;
 
   OrbitalSim *sim = constructOrbitalSim(timeStep);
 
@@ -33,27 +40,38 @@ int main() {
 
   resource_t *Master_resource = intro(&simVisualType, &simLogicalType, view, &monitor);
 
-//   float blurStrength = 1.0f;
-//   SetShaderValue(Master_resource->Shader_blur, Master_resource->Shader_blur_intensity_location, &blurStrength, SHADER_UNIFORM_FLOAT);
+  //   float blurStrength = 1.0f;
+  //   SetShaderValue(Master_resource->Shader_blur, Master_resource->Shader_blur_intensity_location, &blurStrength, SHADER_UNIFORM_FLOAT);
 
   setup_3D_view(view);
 
-  int subSteps = 10;
+  int subSteps = 1;
 
   while ( isViewRendering(view) )
   {
     for ( int i = 0; i < subSteps; i++ ) // multiple updates per frame
       updateOrbitalSim(sim, simLogicalType);
 
+    update_blur_shader(Master_resource, &monitor, blur_gradient);
+
+    if ( blur_gradient > 5 ) blur_gradient -= 2 * blur_gradient / (MAX_GRADIENT - blur_gradient);
+
     renderView(view, sim, Master_resource, simVisualType);
 
-    BeginDrawing();
+    //     if (temp_skip) BeginDrawing_with_blurry_filter(Master_resource);
+    //     else
+    BeginDrawing_without_blurry_filter(Master_resource);
 
-    ClearBackground(BLACK);
-//     BeginShaderMode(Master_resource->Shader_blur);
-     DrawTextureRec(Master_resource->Texture_Buffer.texture, (Rectangle) {0, 0, (float) Master_resource->Texture_Buffer.texture.width, (float) -Master_resource->Texture_Buffer.texture.height}, (Vector2) {0, 0}, WHITE);
+    if ( GetKeyPressed() ) temp_skip = 1;
 
-//     EndShaderMode();
+    //     DrawFPS(0, 0);
+    //     DrawText(getISODate(sim->totalTime), 0, 25, 20, RED);
+
+    if ( fading_black_wall(&monitor) )
+    {
+      DrawTextEx(Master_resource->Font_Golden, "Space Invaders", (Vector2) {monitor.width * 0.5f, monitor.height * 0.3f} - MeasureTextEx(Master_resource->Font_Golden, "Space Invaders", 128, 0.0) * 0.5, 128, 0.0, GOLD);
+    }
+
     EndDrawing();
   }
 
