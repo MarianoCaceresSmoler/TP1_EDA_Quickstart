@@ -70,6 +70,7 @@ Para los bonus points, optamos por tocar mas las cosas graficas y esteticas del 
 - Cambiamos el reescalado de los cuerpos (su posicion y tamaño), usando raices en lugar de lugaritmos. Y junto a esto, espaciamos la disposicion de los asteroides (lo que mejora la visualizacion y la complejidad grafica).
 
 Tambien, incoporamos un modelo fisico propio: una aproximacion del modelo masa-resorte para simular el comportamiento de los cuerpos. Usamos esto para poder correr la simulacion usando un comportamiento oscilatorio elastico. Por esto ademas incluimos un menu para hacer configurable la simulacion (el usuario puede seleccionar en que modelo ejecutar el programa).
+Para ver el menu, usa la tecla BACKSPACE. Para ingresar a la simulacion, toca ENTER. Para salir de la simulacion, usa ESC.
 
 Por ultimo, en cuanto al easter egg, creemos que tiene que ver con la configuracion inicial de los asteroides en phi = 0 en lugar de en un angulo random (lo que hace que los asteroides partan todos desde el mismo angulo sin distincion).
 

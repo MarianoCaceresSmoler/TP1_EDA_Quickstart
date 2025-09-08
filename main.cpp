@@ -242,12 +242,6 @@ int main()
 
 			DrawFPS(0, 0);
 
-			DrawTextEx(Master_resource->Font_Gothic, "[Enter] for freeview",
-					   (Vector2){monitor.width * 0.3F, monitor.height * 0.9F}, 48, 0.0, WHITE);
-
-			DrawTextEx(Master_resource->Font_Gothic, "[ESC] to exit Planetarium",
-					   (Vector2){monitor.width * 0.6F, monitor.height * 0.9F}, 48, 0.0, WHITE);
-
 			EndDrawing();
 
 			break;
@@ -274,12 +268,6 @@ int main()
 			{
 				program_stage = SETTING_MENU;
 			}
-
-			DrawTextEx(Master_resource->Font_Gothic, "[Backspace] to display settings",
-					   (Vector2){monitor.width * 0.3F, monitor.height * 0.9F}, 48, 0.0, WHITE);
-
-			DrawTextEx(Master_resource->Font_Gothic, "[ESC] to exit Planetarium",
-					   (Vector2){monitor.width * 0.6F, monitor.height * 0.9F}, 48, 0.0, WHITE);
 
 			EndDrawing();
 
