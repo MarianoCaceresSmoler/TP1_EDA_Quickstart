@@ -18,7 +18,7 @@ Asi vimos que para valores de timeStep muy grandes, se pierden muchos calculos i
 Con 10 dias por segundo, los planetas mantienen orbitas bastante estables. Con 100 o 1000 días por segundo y bastantes actualizaciones, ya apreciamos que algunos planetas salen volando, ya que el metodo y la aproximacion utilizada es sensible a pasos grandes.
 
 Para simular mas años más rápido, vimos asi que era preferible usar multiples updates por frame en vez de aumentar timeStep, porque asi reducimos 
-el error acumulado. Con 10 updates por frame la simulacion va rapido y no pierde precisión. Sin embargo, de esta forma se pierden FPS.
+el error acumulado. Con 5 updates por frame la simulacion va "rapido" y no pierde precisión. Sin embargo, de esta forma se pierden FPS.
 
 ## Verificación del tipo de datos float
 
@@ -57,17 +57,20 @@ y con 1000 ya superamos el millón.
 En primer lugar, notamos que el cuello de botella en los graficos viene dado por la funcion de DrawSphere. Lo que hicimos para mejorar esto fue definir 3 rangos de vision, teniendo en cuenta la distancia de la camara a cada objeto. Para la distancia mas corta, seguimos usando DrawSphere. Para una distancia media, usamos 
 DrawSphereEx, que reduce bastante la resolucion de la esfera dibujada pero todavia queda algo definida. Y por ultimo, para la distancia larga, dibujamos los cuerpos solo como puntos y no como esferas.
 
-Por otro lado, y con el objetivo recudir la complejidad computacional, decidimos simplificar el algoritmo de actualizacion de los cuerpos usando un modelo de "pseudo grilla" para los asteroides (similar a Barnes-Hut). Fundamentalmente, dividimos el espacio en regiones y agrupamos los asteroides en celdas. Y asi, en lugar de calcular la interaccion exacta entre cada para de asteroides (0(n^2)), calculamos una interaccion aproximada entre bloques de asteroides cercanos o adyacentes.
-Asi, se reduce significativamente la cantidad de calculos, se mantiene una buena aproximacion visual, y se evita el uso de algoritmos o estructuras demasiado complejas.
+Por otro lado, para recudir la complejidad computacional, hicimos dos simplificaciones:
+- Para los planetas y el sol: calculamos la atraccion gravitatoria unicamente entre ellos mismos.
+- Para los asteroides: calculamos la atraccion gravitatoria unicamente con el cuerpo mas masivo
 
-Aplicando este metodo simplificado, redujimos una complejidad computacional O(n²), a una de aproximadamente O(n log(n)).
+De esta forma, pasamos de un O(n²) a aproximadamente O(n) (1 for de n repeticiones con otro fo interno de solo 9 iteraciones, dando como resultado 9*n iteraciones). Asi, se pierde algo de precision para los asteroides sobre todo, pero que no es tan tan relevante por la diferencia de masa de los cuerpos.
 
 ## Bonus points
 Para los bonus points, optamos por tocar mas las cosas graficas y esteticas del programa:
 - Agregamos una nave espacial que sigue la camara y el movimiento del jugador.
-- Incluimos modelos 3d para representar los diferentes cuerpos del programa: la nave, los planetas, e incluso pepsis (ver build/Assets).
+- Incluimos modelos 3d para representar los diferentes cuerpos del programa: la nave, los planetas. (ver build/Assets).
 - Cambiamos el reescalado de los cuerpos (su posicion y tamaño), usando raices en lugar de lugaritmos. Y junto a esto, espaciamos la disposicion de los asteroides (lo que mejora la visualizacion y la complejidad grafica).
 
 Tambien, incoporamos un modelo fisico propio: una aproximacion del modelo masa-resorte para simular el comportamiento de los cuerpos. Usamos esto para poder correr la simulacion usando un comportamiento oscilatorio elastico. Por esto ademas incluimos un menu para hacer configurable la simulacion (el usuario puede seleccionar en que modelo ejecutar el programa).
 
 Por ultimo, en cuanto al easter egg, creemos que tiene que ver con la configuracion inicial de los asteroides en phi = 0 en lugar de en un angulo random (lo que hace que los asteroides partan todos desde el mismo angulo sin distincion).
+
+Adicionalmente, decidimos implementar nuestro propio "easter egg" ;).

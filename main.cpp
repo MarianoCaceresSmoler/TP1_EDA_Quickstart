@@ -17,6 +17,10 @@
 int main()
 {
 
+	//**************DECLARATIONS & DEFINITIONS***************//
+
+	program_stage_t program_stage = INTRODUCTION;
+
 	monitor_t monitor;
 
 	visual_sim_type_t simVisualType = SIM_STANDBY;
@@ -24,84 +28,281 @@ int main()
 
 	int fps = monitor.refresh_rate; // Frames per second
 
-	bool temp_skip = 0;
-
-	unsigned char gradient = 255;
-
 	View *view = constructView(&fps, &monitor);
 
 	float timeMultiplier = 10 * SECONDS_PER_DAY; // Simulation speed: 10 days per simulation second
-	float timeStep = timeMultiplier / fps;
+	float timeStep = 1 * timeMultiplier / fps;
+
+	unsigned char gradient = 255;
+	unsigned char text_gradient = 0;
+	unsigned char text_gradient_2 = 0;
+
+	long long timer_1;
+
+	bool wait_for_text = 0;
+	bool toggle_ship = 0;
 
 	float blur_gradient = MAX_GRADIENT - 20;
+
+	const char *view_options[2] = {"Planets Mode", "Pepsi Mode"};
+	const char *math_options[2] = {"Gravity Mode", "Spring Mode"};
+	const char *ship_options[2] = {"No", "Yes"};
+
+	int subSteps;
+
+	float &monitorwidth = monitor.width;
+	float &monitorheight = monitor.height;
+
+	//*******************************************************//
+
+	//************************STARTUP************************//
 
 	OrbitalSim *sim = constructOrbitalSim(timeStep);
 
 	InitAudioDevice();
 
+	HideCursor();
+
 	resource_t *Master_resource = intro(&simVisualType, &simLogicalType, view, &monitor);
 
-	//   float blurStrength = 1.0f;
-	//   SetShaderValue(Master_resource->Shader_blur, Master_resource->Shader_blur_intensity_location, &blurStrength, SHADER_UNIFORM_FLOAT);
+	//*******************************************************//
+
+	//***********************PRE-LOOP************************//
+
+	while (GetKeyPressed())
+		;
 
 	setup_3D_view(view);
 
-	int subSteps = 1;
+	float x = monitorwidth * 0.7f;
+	float y1 = monitorheight * 0.4f;
+	float y2 = monitorheight * 0.5f;
+	float y3 = monitorheight * 0.6f;
+	float w = monitorwidth * 0.3f;
+	float h = monitorheight * 0.05f;
 
-	keyboartInputs_t inputs;
+	//*******************************************************//
+
+	//*********************MAIN-LOOP*************************//
 
 	while (isViewRendering(view))
 	{
-		if (IsKeyDown(KEY_RIGHT))
-			inputs.keyRight = 1;
-		if (IsKeyDown(KEY_LEFT))
-			inputs.keyLeft = 1;
-		if (IsKeyDown(KEY_UP))
-			inputs.keyUp = 1;
-		if (IsKeyDown(KEY_DOWN))
-			inputs.keyDown = 1;
 
-		updateSpaceShip(sim->ship, inputs, sim->timeStep);
-
-		for (int i = 0; i < subSteps; i++) // multiple updates per frame
-			updateOrbitalSim(sim, simLogicalType);
-
-		renderView(view, sim, Master_resource, simVisualType);
-		update_blur_shader(Master_resource, &monitor, blur_gradient);
-
-		if (blur_gradient > 5)
-			blur_gradient -= 2 * blur_gradient / (MAX_GRADIENT - blur_gradient);
-
-		//     if (temp_skip) BeginDrawing_with_blurry_filter(Master_resource);
-		//     else
-		BeginDrawing_without_blurry_filter(Master_resource);
-
-		if (GetKeyPressed())
-			temp_skip = 1;
-
-		//     DrawFPS(0, 0);
-		//     DrawText(getISODate(sim->totalTime), 0, 25, 20, RED);
-
-		if (fading_black_wall(&monitor))
+		switch (program_stage)
 		{
-			DrawTextEx(Master_resource->Font_Golden, "Space Invaders", (Vector2){monitor.width * 0.5f, monitor.height * 0.3f} - MeasureTextEx(Master_resource->Font_Golden, "Space Invaders", 128, 0.0) * 0.5, 128, 0.0, GOLD);
+
+			//********TITLE-SCREEN*********//
+
+		case INTRODUCTION:
+			subSteps = 5;
+			for (int i = 0; i < subSteps; i++)
+				updateOrbitalSim(sim, simLogicalType); // Updates multiple times per frame.
+
+			renderView(view, sim, Master_resource, simVisualType, 0, toggle_ship);
+
+			update_blur_shader(Master_resource, &monitor, blur_gradient);
+
+			if (blur_gradient > 5)
+				blur_gradient -= 3 * blur_gradient / (MAX_GRADIENT - blur_gradient);
+
+			BeginDrawing_with_blurry_filter(Master_resource);
+
+			if (fading_black_wall(&monitor))
+			{
+				if (text_gradient < 255)
+				{
+					text_gradient += 5;
+				}
+				else if (!wait_for_text && text_gradient == 255)
+				{
+					timer_1 = timestamp_millis();
+					wait_for_text = 1;
+				}
+				else if (wait_for_text && text_gradient == 255 && text_gradient_2 < 255 && timestamp_millis() - timer_1 >= 2000)
+				{
+					text_gradient_2 += 5;
+				}
+
+				DrawTextEx(Master_resource->Font_Golden, "Planetarium",
+						   (Vector2){monitorwidth * 0.5f, monitorheight * 0.3f} - MeasureTextEx(Master_resource->Font_Golden, "Planetarium", 128, 0.0) * 0.5,
+						   128, 0.0, (Color){255, 203, 0, text_gradient});
+
+				DrawTextEx(Master_resource->Font_Gothic,
+						   "Press any key to continue",
+						   (Vector2){monitorwidth * 0.5f, monitorheight * 0.7f} - MeasureTextEx(Master_resource->Font_Gothic, "Press any key to continue", 48, 0.0) * 0.5,
+						   48, 0.0, (Color){255, 255, 255, text_gradient_2});
+			}
+
+			DrawFPS(0, 0);
+
+			EndDrawing();
+
+			if (text_gradient_2 == 255 && GetKeyPressed())
+			{
+				program_stage = SETTING_MENU;
+			}
+
+			break;
+
+			//*****************************//
+
+			//**********SETTINGS***********//
+
+		case SETTING_MENU:
+
+			ShowCursor();
+
+			subSteps = 5;
+			for (int i = 0; i < subSteps; i++)
+				updateOrbitalSim(sim, simLogicalType); // Updates multiple times per frame.
+
+			renderView(view, sim, Master_resource, simVisualType, 0, toggle_ship);
+
+			BeginDrawing_with_blurry_filter(Master_resource);
+
+			//-----Buttons display------//
+
+			// Physics mode button
+
+			DrawTextEx(Master_resource->Font_Gothic, "Physics Mode", (Vector2){monitorwidth * 0.75F, monitorheight * 0.35F}, 48, 0.0, WHITE);
+
+			if (isMouseHere(GetMousePosition(), (Vector2){x, y1}, (Vector2){x + w, y1 + h}))
+			{
+				DrawRectangleGradientH(x, y1, w, h, BLACK, PURPLE);
+				DrawTextEx(Master_resource->Font_Gothic, math_options[simLogicalType], (Vector2){x + w * 0.5F, y1}, 48, 0.0, WHITE);
+			}
+			else
+			{
+				DrawRectangleGradientH(x, y1, w, h, BLACK, DARKBLUE);
+				DrawTextEx(Master_resource->Font_Gothic, math_options[simLogicalType], (Vector2){x + w * 0.5F, y1}, 48, 0.0, BLACK);
+			}
+
+			// View mode button
+
+			DrawTextEx(Master_resource->Font_Gothic, "View Mode", (Vector2){monitorwidth * 0.75F, monitorheight * 0.45F}, 48, 0.0, WHITE);
+
+			if (isMouseHere(GetMousePosition(), (Vector2){x, y2}, (Vector2){x + w, y2 + h}))
+			{
+				DrawRectangleGradientH(x, y2, w, h, BLACK, PURPLE);
+				DrawTextEx(Master_resource->Font_Gothic, view_options[simVisualType], (Vector2){x + w * 0.5F, y2}, 48, 0.0, WHITE);
+			}
+			else
+			{
+				DrawRectangleGradientH(x, y2, w, h, BLACK, DARKBLUE);
+				DrawTextEx(Master_resource->Font_Gothic, view_options[simVisualType], (Vector2){x + w * 0.5F, y2}, 48, 0.0, BLACK);
+			}
+
+			// Spaceship toggle button
+
+			DrawTextEx(Master_resource->Font_Gothic, "Call SpaceShip", (Vector2){monitorwidth * 0.75F, monitorheight * 0.55F}, 48, 0.0, WHITE);
+
+			if (isMouseHere(GetMousePosition(), (Vector2){x, y3}, (Vector2){x + w, y3 + h}))
+			{
+				DrawRectangleGradientH(x, y3, w, h, BLACK, PURPLE);
+				DrawTextEx(Master_resource->Font_Gothic, ship_options[toggle_ship], (Vector2){x + w * 0.5F, y3}, 48, 0.0, WHITE);
+			}
+			else
+			{
+				DrawRectangleGradientH(x, y3, w, h, BLACK, DARKBLUE);
+				DrawTextEx(Master_resource->Font_Gothic, ship_options[toggle_ship], (Vector2){x + w * 0.5F, y3}, 48, 0.0, BLACK);
+			}
+
+			//--------------------------//
+
+			//----Mouse interaction-----//
+
+			if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+			{
+				if (isMouseHere(GetMousePosition(), (Vector2){x, y1}, (Vector2){x + w, y1 + h}))
+				{
+					if (simLogicalType == GRAVITATIONAL_SIMULATION)
+						simLogicalType = SPRINGS_SIMULATION;
+					else
+						simLogicalType = GRAVITATIONAL_SIMULATION;
+				}
+				else if (isMouseHere(GetMousePosition(), (Vector2){x, y2}, (Vector2){x + w, y2 + h}))
+				{
+					if (simVisualType == PLANETS_SIMULATION)
+						simVisualType = PEPSI_SIMULATION;
+					else
+						simVisualType = PLANETS_SIMULATION;
+				}
+				else if (isMouseHere(GetMousePosition(), (Vector2){x, y3}, (Vector2){x + w, y3 + h}))
+				{
+					toggle_ship = !toggle_ship;
+				}
+			}
+
+			//--------------------------//
+
+			if (IsKeyPressed(KEY_ENTER))
+			{
+				program_stage = FREEVIEW;
+			}
+
+			DrawFPS(0, 0);
+
+			DrawTextEx(Master_resource->Font_Gothic, "[Enter] for freeview",
+					   (Vector2){monitor.width * 0.3F, monitor.height * 0.9F}, 48, 0.0, WHITE);
+
+			DrawTextEx(Master_resource->Font_Gothic, "[ESC] to exit Planetarium",
+					   (Vector2){monitor.width * 0.6F, monitor.height * 0.9F}, 48, 0.0, WHITE);
+
+			EndDrawing();
+
+			break;
+
+			//*****************************//
+
+			//*********FREEVIEW************//
+
+		case FREEVIEW:
+			HideCursor();
+			subSteps = 5;
+			for (int i = 0; i < subSteps; i++)
+				updateOrbitalSim(sim, simLogicalType); // Updates multiple times per frame.
+
+			BeginDrawing_without_blurry_filter(Master_resource);
+
+			renderView(view, sim, Master_resource, simVisualType, 1, toggle_ship);
+
+			DrawText(getISODate(sim->totalTime), 0, 25, 20, RED);
+
+			DrawFPS(0, 0);
+
+			if (IsKeyPressed(KEY_BACKSPACE))
+			{
+				program_stage = SETTING_MENU;
+			}
+
+			DrawTextEx(Master_resource->Font_Gothic, "[Backspace] to display settings",
+					   (Vector2){monitor.width * 0.3F, monitor.height * 0.9F}, 48, 0.0, WHITE);
+
+			DrawTextEx(Master_resource->Font_Gothic, "[ESC] to exit Planetarium",
+					   (Vector2){monitor.width * 0.6F, monitor.height * 0.9F}, 48, 0.0, WHITE);
+
+			EndDrawing();
+
+			break;
+
+			//*****************************//
+
+		default:
+			break;
 		}
+	}
 
-		EndDrawing();
+	//*******************************************************//
 
-		inputs.keyRight = 0;
-		inputs.keyLeft = 0;
-		inputs.keyUp = 0;
-		inputs.keyDown = 0;
-	}	
+	//************************CLEANUP************************//
 
 	destroyView(view);
 	destroyOrbitalSim(sim);
 	CloseAudioDevice();
 
-	std ::cout << monitor.current << "\t" << monitor.height << "\t" << monitor.refresh_rate << "\t" << monitor.width;
-
 	kill_resources(Master_resource);
 
 	return 0;
+
+	//*******************************************************//
 }
